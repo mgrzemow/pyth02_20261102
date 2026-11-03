@@ -66,24 +66,51 @@ for n in g4:
 import requests
 import datetime as dt
 import typing
+import itertools
 
 
 def generatorNBP(currency: str) -> typing.Iterator[dict]:
-    # przygotować daty i url
-    # wysłać reqyest
-    # iterowac po notowaniach:
-    #     modyfikacja ntotowania
-    #     yield notowania
+    url_tempate = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
+    date_to = dt.date.today()
+    td1 = dt.timedelta(days=1)
+    while True:
+        date_from = date_to - 365 * td1
+        url = url_tempate.format(currency, date_from, date_to)
+        r = requests.get(url)
+        if r.status_code == 404:
+            return
+        r.raise_for_status()
+        data = r.json()
+        for rate in reversed(data['rates']):
+            del(rate['no'])
+            rate['code'] = currency
+            rate['effectiveDate'] = dt.date.fromisoformat(rate['effectiveDate'])
+            yield rate
+        date_to = date_from - td1
+
+def generuj_spread(g_nbp) -> typing.Iterator[dict]:
+    for rate in g_nbp:
+        rate['spread'] = round(rate['ask'] - rate['bid'], 6)
+        yield rate
+
+def generuj_delta(g_nbp) -> typing.Iterator[dict]:
+    for rate1, rate2 in itertools.pairwise(g_nbp):
+        rate1['delta'] = round(rate1['ask'] - rate2['ask'], 6)
+        yield rate1
+
+def filtruj(g_nbp, field, min):
+    for rate in g_nbp:
+        if abs(rate[field]) >= min:
+            yield rate
+
 
 
 if __name__ == '__main__':
-    url_tempate = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
-    currency = 'usd'
-    date_to = dt.date.today()
-    td1 = dt.timedelta(days=1)
-    date_from = date_to - 365 * td1
-    url = url_tempate.format(currency, date_from, date_to)
-    r = requests.get(url)
-    r.raise_for_status()
-    data = r.json()
-    print(data['rates'][0]['bid'])
+    g1 = generatorNBP('usd')
+    g2 = generuj_spread(g1)
+    g3 = generuj_delta(g2)
+    g4 = filtruj(g3, "spread", 0.08)
+    g5 = filtruj(g4, "delta", 0.07)
+
+    for r in g5:
+        print(r)
