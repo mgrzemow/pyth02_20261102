@@ -61,3 +61,17 @@ g4 = filtruj(g3, "delta", 0.07)
 for n in g4:
     print(n)
 """
+import requests
+import datetime as dt
+
+if __name__ == '__main__':
+    url_tempate = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
+    currency = 'usd'
+    date_to = dt.date.today()
+    td1 = dt.timedelta(days=1)
+    date_from = date_to - 365 * td1
+    url = url_tempate.format(currency, date_from, date_to)
+    r = requests.get(url)
+    r.raise_for_status()
+    data = r.json()
+    print(data['rates'][0]['bid'])
