@@ -12,6 +12,8 @@ http://api.nbp.pl
 Generator będzie wczytywał dane latami (wolno wysłać zapytanie tylko o rok danych na raz) i będzie zwracał (yield)notowania w kolejności odwrotnej chronologicznie (w tył).
 
 Format pojedynczego notowania będzie słownikiem o postaci:
+{"no":"21/C/NBP/2012","effectiveDate":"2012-01-31","bid":5.0382,"ask":5.1400}
+
 {
     'code': 'USD',
 	'bid': 3.3,
@@ -63,6 +65,16 @@ for n in g4:
 """
 import requests
 import datetime as dt
+import typing
+
+
+def generatorNBP(currency: str) -> typing.Iterator[dict]:
+    # przygotować daty i url
+    # wysłać reqyest
+    # iterowac po notowaniach:
+    #     modyfikacja ntotowania
+    #     yield notowania
+
 
 if __name__ == '__main__':
     url_tempate = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
