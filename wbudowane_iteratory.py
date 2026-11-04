@@ -42,5 +42,24 @@ y = ['raz', 'dwa']
 for i, j in itertools.zip_longest(x, y, fillvalue='ciociamarysia'):
     print(i, j)
 
+# rozdzilacz, czyli tee
+x = ['ala', 'tomek', 'zosia', 'karol', 'marysia']
+it = iter(x)
+
+for i in it:
+    print(i)
+
+for i in it:
+    print(i)
+
+print('-----')
+it1, it2 = itertools.tee(iter(x), 2)
+for i in it1:
+    print(i)
+
+for i in it2:
+    print(i)
+
+
 # if you need more generic iterators:
 # https://more-itertools.readthedocs.io/en/stable/
