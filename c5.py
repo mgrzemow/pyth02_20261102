@@ -65,6 +65,37 @@ class Spychacz:
     def __bool__(self):
         return False
 
+    def __float__(self):
+        return 55.5
+
+    # operatory
+
+    def __add__(self, other: 'int|Spychacz'):
+        return 'nie wiem co zwrocic'
+
+    # and much more!!!
+
+    # hashing - I MUST implement both!!!
+    def __hash__(self):
+        # how to calculate hash of a number of atributes
+        return hash((self.nr_rej, self._x, self._y))
+
+    def __eq__(self, other):
+        return self.nr_rej == other.nr_rej
+
+    # needed for sorting
+    def __lt__(self, other):
+        return self.nr_rej < other.nr_rej
+
+    # slicing
+    def __getitem__(self, item):
+        print('__getitem__', item)
+        return 12
+
+    def __del__(self):
+        print(
+            'destructor called for Spychacz, not guarantteed to be called'
+        )
 
 
 if __name__ == '__main__':
@@ -100,4 +131,40 @@ if __name__ == '__main__':
     else:
         print('None')
 
+    s1 = Spychacz('wa12345')
+    s + s1
+
+    zbior = set()
+    zbior.add(s)
+    print(zbior)
+    s2 = Spychacz('kr12345')
+    zbior.add(s2)
+    print(zbior)
+    s.nr_rej = 'nowy'
+    zbior.add(s)
+    print(zbior)
+    ls = [s1, s]
+    ls.sort()
+    print(ls)
+    s[1]
+    s['asdasd']
+    s['asdasd':1.4:6]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    s + s1
 
