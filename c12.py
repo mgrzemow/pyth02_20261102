@@ -2,11 +2,12 @@
 import functools
 import logging
 
-logging.basicConfig(level=logging.DEBUG, filename='log.txt', filemode='w', encoding='utf-8')
+logging.basicConfig(level=logging.WARNING, filename='log.txt', filemode='w', encoding='utf-8')
 
-# za pierwszym razem tworzymy obiekt loggera
+# za pierwszym razem tworzymy obiekt loggera - one są singletonami per id
 logger = logging.getLogger(__name__)
-# a tu już zwracany ze slownika, więc to jest tanie
+# a tu już zwracany ze slownika, więc to jest tanie - nie ma potrzeby jakoś przekazywać starannie
+# referencji do loggerow
 logger = logging.getLogger(__name__)
 logger = logging.getLogger(__name__)
 
@@ -17,23 +18,41 @@ l1 = logging.getLogger('l1')
 # to logger o id l1.l2 dostanie jego ustawienia
 l2 = logging.getLogger('l1.l2')
 
-l1.log(logging.DEBUG, 'test')
+# w __name__ mamy kwalifikowaną nazwę modułu, więc dla pliku m1 w pakiecie p1
+# __name__ będzie miało wartość p1.m1
+# więc jeżeli dodamy w __init__.py konfigurację loggera o id: p1
+# to wszystkie pliki w pakiecie dostaną tę konfigurację
+
+
+# l1.log(logging.DEBUG, 'test')
+
 
 class loguj_wywolania:
     def __init__(self, ok_level=logging.DEBUG, error_level=logging.ERROR):
-        ...
+        self.ok_level = ok_level
+        self.error_level = error_level
+
     def __call__(self, f_dekorowana):
         @functools.wraps(f_dekorowana)
         def nowa_funkcja(*args, **kwargs):
-            print('nowa_funkcja przed wywolaniem oryginalnej', args, kwargs, self.p1)
-            r = f_dekorowana(*args, **kwargs)
-            print('nowa_funkcja po wywolaniu oryginalnej', args, kwargs, r)
+            lgr = logging.getLogger(__name__)
+            lgr.log(self.ok_level, f'wywoluje funkcje {f_dekorowana.__name__} z parametrami {args=} i {kwargs=}')
+            try:
+                r = f_dekorowana(*args, **kwargs)
+            except BaseException as e:
+                lgr.log(self.error_level, f'wywolanie funkcji {f_dekorowana.__name__} z parametrami {args=} i {kwargs=}, rzuciło wyjątek {e}, typu {type(e).__name__}, dodatakowe informacje {e.args}')
+                raise
+            else:
+                lgr.log(self.ok_level, f'funkcja {f_dekorowana.__name__} z parametrami {args=} i {kwargs=} -> {r}')
             return r
+
         return nowa_funkcja
+
 
 @loguj_wywolania()
 def f1(x, y):
     return x / y
+
 
 if __name__ == '__main__':
     f1(1, 2)
