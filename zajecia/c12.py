@@ -4,9 +4,7 @@
 import functools
 import logging
 
-logging.basicConfig(
-    level=logging.WARNING, filename="log.txt", filemode="w", encoding="utf-8"
-)
+logging.basicConfig(level=logging.WARNING, filename="log.txt", filemode="w", encoding="utf-8")
 
 # za pierwszym razem tworzymy obiekt loggera - one są singletonami per id
 logger = logging.getLogger(__name__)

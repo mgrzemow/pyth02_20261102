@@ -6,9 +6,7 @@ import time
 
 def czekaj(n):
     """Czeka n sekund i wypisuje nazwę procesu."""
-    print(
-        f"Proces {multiprocessing.current_process().name} czeka {n} sekund...\n", end=""
-    )
+    print(f"Proces {multiprocessing.current_process().name} czeka {n} sekund...\n", end="")
     time.sleep(n)
     print(f"Proces {multiprocessing.current_process().name} konczy...\n", end="")
 

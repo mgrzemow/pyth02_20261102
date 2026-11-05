@@ -92,9 +92,7 @@ def zatrudnij_zespol(ilu_p, ilu_k, ilu_d) -> list[PracownikAbstract]:
     for i in range(ilu_p):
         zespol.append(Pracownik(imie=f.first_name(), stawka_pod=10, stawka_nad=20))
     for i in range(ilu_k):
-        zespol.append(
-            Kierownik(imie=f.first_name(), stawka_pod=10, stawka_nad=20, bonus_kier=100)
-        )
+        zespol.append(Kierownik(imie=f.first_name(), stawka_pod=10, stawka_nad=20, bonus_kier=100))
     for i in range(ilu_d):
         zespol.append(
             Dyrektor(

@@ -1,11 +1,60 @@
 [project]
-name = "pyth02-20261102"
+name = "kursy-nbp"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pobieranie i strumieniowe przetwarzanie notowań walut z API NBP"
+readme = "README.md"
+authors = [{ name = "Michał Grzemowski" }]
 requires-python = ">=3.15"
 dependencies = [
+    "requests>=2.34.2",
+    "typer>=0.27.3",
+]
+
+[project.scripts]
+kursy-nbp = "kursy_nbp.cli:app"
+
+[dependency-groups]
+dev = [
+    "mypy>=2.4.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.4",
+    "types-requests>=2.33.0.20261030",
+]
+docs = [
+    "mkdocstrings-python>=2.0.10",
+    "zensical==0.1.0",
+]
+zajecia = [
     "faker>=40.44.0",
     "numpy>=2.5.4",
     "pdoc3>=0.11.6",
-    "requests>=2.34.2",
 ]
+
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+
+[tool.pytest]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# skrypty z zajęć: tylko formatowanie i podstawowe błędy, bo część przykładów jest celowo „zła”
+"zajecia/**" = ["E", "I", "UP", "B", "D"]
+# celowe przykłady: ponowna definicja nazwy i nieużywane zmienne w domknięciach
+"zajecia/deskryptory.py" = ["F811"]
+"zajecia/g_sortujacy.py" = ["F811"]
+"zajecia/functions.py" = ["F811", "F841"]
+
+[tool.mypy]
+strict = true
+files = ["src"]

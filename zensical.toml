@@ -1,0 +1,5 @@
+[project]
+site_name = "kursy-nbp"
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
