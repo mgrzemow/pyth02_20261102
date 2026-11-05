@@ -1,18 +1,23 @@
 import re
-regex1 = r'^([\w-]+)==(\d+)\.(\d+)(\.(.+))?$'
 
+# os.system wyda polecenie ale nie ma możliwości odczytania stdout
 # import os
 # os.system('pip freeze')
 import subprocess
-r = subprocess.run('pip freeze', capture_output=True, shell=True, encoding='utf-8')
-wydruk = r.stdout.splitlines()
-for line in wydruk:
-    m = re.match(regex1, line)
-    if m is not None:
-        print(m.groups())
+from pprint import pprint
 
-# napisać funkcję, która wyciąga listę zainstalowanych pakietów w formie słownika:
-{
-    'django': (3, 2, '13.3'),
-    'requests': (3, 2, None),
-}
+
+def wczytaj_pakiety(encoding='utf-8'):
+    regex1 = r'([\w-]+)==(\d+)\.(\d+)(\.(.+))?\n'
+    r = subprocess.run('pip freeze', capture_output=True, shell=True, encoding=encoding)
+    wydruk = r.stdout
+    wynik = {}
+    wrc = re.compile(regex1)
+    for m in wrc.finditer(wydruk):
+        g = m.groups()
+        wynik[g[0]] = (int(g[1]), int(g[2]), g[4])
+    return wynik
+
+
+if __name__ == '__main__':
+    pprint(wczytaj_pakiety())
