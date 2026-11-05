@@ -1,10 +1,12 @@
 """Docstringi i podpowiedzi typów; plik wejściowy do generowania dokumentacji."""
+
 import typing
 
 # skąd uczyć się type hintów
 # https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html
 
-def do_potegi(podstawa: float, wykladnik: float) -> float|complex:
+
+def do_potegi(podstawa: float, wykladnik: float) -> float | complex:
     """
     This is a docstring with minimum syntax
 
@@ -15,10 +17,11 @@ def do_potegi(podstawa: float, wykladnik: float) -> float|complex:
     lore ipplsumlore ipplsumlore ipplsum
     """
     print(podstawa, wykladnik)
-    return podstawa ** wykladnik
+    return podstawa**wykladnik
+
 
 # nie ma sposobu na ohintowanie listy jako rekordu
-def zwracam_rekord_liste(n: int) -> list[str|int]:
+def zwracam_rekord_liste(n: int) -> list[str | int]:
     """
     first line
 
@@ -33,7 +36,8 @@ def zwracam_rekord_liste(n: int) -> list[str|int]:
     Returns: a list
     """
 
-    return ['Ola', 44, 'Warszawa'] * n
+    return ["Ola", 44, "Warszawa"] * n
+
 
 # it os possible to hint variables
 # if we have an old package without hints

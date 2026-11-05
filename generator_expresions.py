@@ -1,7 +1,5 @@
 """Wyrażenia generatorowe oraz pojęcia: iterable, iterator i generator."""
 
-
-
 if __name__ == "__main__":
     x = range(10_000_000)
     # input('stop')  # pauza na podgląd zużycia pamięci w menedżerze zadań
@@ -22,7 +20,7 @@ if __name__ == "__main__":
     # generator - a kind of iterator: created by a function with yield or a generator expression
 
     # sometimes iterator will be separate from the iterable
-    x = [1,2,3,4]
+    x = [1, 2, 3, 4]
     it = x.__iter__()
     print(it is x)
 

@@ -1,4 +1,5 @@
 """Pomiary wątków i procesów; symulowane I/O bez ruchu w sieci, trwa kilkanaście sekund."""
+
 import multiprocessing
 import threading
 import time
@@ -57,7 +58,11 @@ def run_in_parallel_process(n_processes, n_operations, f):
         t.join()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     for n in [32, 64, 128, 256]:
-        t = timeit.timeit(stmt=f'run_in_parallel_thread({n}, 4096, symuluj_io)', globals=globals(), number=1)
-        print(f'{n}: {t:.2f}')
+        t = timeit.timeit(
+            stmt=f"run_in_parallel_thread({n}, 4096, symuluj_io)",
+            globals=globals(),
+            number=1,
+        )
+        print(f"{n}: {t:.2f}")

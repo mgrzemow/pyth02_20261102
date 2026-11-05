@@ -17,9 +17,9 @@ Format pojedynczego notowania będzie słownikiem o postaci:
 
 {
     'code': 'USD',
-	'bid': 3.3,
-	'ask': 3.4,
-	'effectiveDate': <tutaj obiekt date z datą notowania>
+        'bid': 3.3,
+        'ask': 3.4,
+        'effectiveDate': <tutaj obiekt date z datą notowania>
 }
 
 Proponuję skorzystać z usługi:
@@ -64,6 +64,7 @@ g4 = filtruj(g3, "delta", 0.07)
 for n in g4:
     print(n)
 """
+
 import requests
 import datetime as dt
 import typing
@@ -72,7 +73,7 @@ import itertools
 
 def generatorNBP(currency: str) -> typing.Iterator[dict]:
     """Zwraca notowania waluty wstecz od dzisiaj, pobierając dane latami."""
-    url_template = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
+    url_template = "https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json"
     date_to = dt.date.today()
     td1 = dt.timedelta(days=1)
     while True:
@@ -83,24 +84,27 @@ def generatorNBP(currency: str) -> typing.Iterator[dict]:
             return
         r.raise_for_status()
         data = r.json()
-        for rate in reversed(data['rates']):
-            del(rate['no'])
-            rate['code'] = currency
-            rate['effectiveDate'] = dt.date.fromisoformat(rate['effectiveDate'])
+        for rate in reversed(data["rates"]):
+            del rate["no"]
+            rate["code"] = currency
+            rate["effectiveDate"] = dt.date.fromisoformat(rate["effectiveDate"])
             yield rate
         date_to = date_from - td1
+
 
 def generuj_spread(g_nbp) -> typing.Iterator[dict]:
     """Dodaje do notowania pole spread, czyli ask - bid."""
     for rate in g_nbp:
-        rate['spread'] = round(rate['ask'] - rate['bid'], 6)
+        rate["spread"] = round(rate["ask"] - rate["bid"], 6)
         yield rate
+
 
 def generuj_delta(g_nbp) -> typing.Iterator[dict]:
     """Dodaje do notowania pole delta, czyli zmianę ceny ask względem poprzedniego dnia."""
     for rate1, rate2 in itertools.pairwise(g_nbp):
-        rate1['delta'] = round(rate1['ask'] - rate2['ask'], 6)
+        rate1["delta"] = round(rate1["ask"] - rate2["ask"], 6)
         yield rate1
+
 
 def filtruj(g_nbp, field, min):
     """Przepuszcza notowania, w których wartość bezwzględna pola wynosi co najmniej min."""
@@ -109,9 +113,8 @@ def filtruj(g_nbp, field, min):
             yield rate
 
 
-
-if __name__ == '__main__':
-    g1 = generatorNBP('usd')
+if __name__ == "__main__":
+    g1 = generatorNBP("usd")
     g2 = generuj_spread(g1)
     g3 = generuj_delta(g2)
     g4 = filtruj(g3, "spread", 0.08)

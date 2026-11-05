@@ -1,4 +1,5 @@
 """Generator zwracający elementy w kolejności: wersja z numpy i wersja ze stertą."""
+
 import numpy as np
 import heapq
 

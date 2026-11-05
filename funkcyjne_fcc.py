@@ -1,4 +1,5 @@
 """Funkcje jako obiekty: map, filter, reduce, lru_cache i partial."""
+
 import collections
 
 
@@ -22,7 +23,6 @@ def div(x, y):
     return x / y
 
 
-
 # x1, op, x2 = input('Podaj wyrazenie: ').split()
 # x1, x2 = float(x1), float(x2)
 
@@ -30,14 +30,12 @@ def div(x, y):
 # print(eval(input('Podaj wyrazenie: ')))
 
 
-
 def f1(i):
     """Zwraca kwadrat; funkcja dla map."""
-    return i ** 2
+    return i**2
 
 
 # print(list(map(f1, x)))
-
 
 
 def f2(i):
@@ -58,10 +56,7 @@ def f3(akronim, slowo):
     return akronim + slowo[0]
 
 
-
 # print(functools.reduce(f3, x.split(), ''))
-
-
 
 
 # * użyć defaultdict
@@ -74,6 +69,7 @@ def f4(slownik, slowo):
 
 # print(functools.reduce(f4, x.split(), collections.defaultdict(list)))
 
+
 # 1 1 2 3 5 8 13 21
 @functools.lru_cache(maxsize=None)
 def fibo(n):
@@ -83,12 +79,15 @@ def fibo(n):
     else:
         return fibo(n - 1) + fibo(n - 2)
 
+
 # print(fibo(1900))
+
 
 def do_potegi(podstawa, wykladnik):
     """Podnosi podstawę do potęgi."""
-    print('do potegi', podstawa, wykladnik)
-    return podstawa ** wykladnik
+    print("do potegi", podstawa, wykladnik)
+    return podstawa**wykladnik
+
 
 def do_kwadratu(podstawa):
     """Podnosi do kwadratu; niżej nadpisana wersją z partial."""
@@ -97,20 +96,17 @@ def do_kwadratu(podstawa):
 
 if __name__ == "__main__":
     d = {
-        '+': add,
-        '-': sub,
-        '*': mul,
-        '/': lambda x, y: x / y,
+        "+": add,
+        "-": sub,
+        "*": mul,
+        "/": lambda x, y: x / y,
     }
     # map filter reduce
     x = [1, 2, 3, 4, 5, 6, 7, 8, 9]
     x = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    x = 'potrzebuje ygrekow to honorowa ogromna nadzieja'
-    x = 'ala alicja alina beata bartek'
-    {
-        'a': ['ala', 'alicja', 'alina'],
-        'b': ['beata', 'bartek']
-    }
+    x = "potrzebuje ygrekow to honorowa ogromna nadzieja"
+    x = "ala alicja alina beata bartek"
+    {"a": ["ala", "alicja", "alina"], "b": ["beata", "bartek"]}
     do_kwadratu = functools.partial(do_potegi, wykladnik=2)
 
     print(do_kwadratu(3))

@@ -26,11 +26,9 @@
 
 class Spychacz:
     """Pojazd poruszający się po siatce, pokazujący metody specjalne."""
-    _kierunki = 'NESW'
-    __slots__ = ['nr_rej',
-                 '_x',
-                 '_y',
-                 '_kierunek']
+
+    _kierunki = "NESW"
+    __slots__ = ["nr_rej", "_x", "_y", "_kierunek"]
 
     def __init__(self, nr_rej):
         """Tworzy spychacz w punkcie (0, 0), skierowany na północ."""
@@ -45,23 +43,23 @@ class Spychacz:
 
     def jedz(self, dlugosc):
         """Przesuwa spychacz o podaną długość w bieżącym kierunku."""
-        if self.__class__._kierunki[self._kierunek] == 'N':
+        if self.__class__._kierunki[self._kierunek] == "N":
             self._y += dlugosc
-        elif self.__class__._kierunki[self._kierunek] == 'E':
+        elif self.__class__._kierunki[self._kierunek] == "E":
             self._x += dlugosc
-        elif self.__class__._kierunki[self._kierunek] == 'S':
+        elif self.__class__._kierunki[self._kierunek] == "S":
             self._y -= dlugosc
-        elif self.__class__._kierunki[self._kierunek] == 'W':
+        elif self.__class__._kierunki[self._kierunek] == "W":
             self._x -= dlugosc
 
     def __str__(self):
         """Zwraca opis dla użytkownika: numer i pozycję."""
-        return f'Spychacz {self.nr_rej} in ({self._x}, {self._y})'
+        return f"Spychacz {self.nr_rej} in ({self._x}, {self._y})"
 
     # if I only want one str conversion - use repr
     def __repr__(self):
         """Zwraca opis dla programisty."""
-        return f'Spychacz({self.nr_rej})'
+        return f"Spychacz({self.nr_rej})"
 
     # conversions
     def __int__(self):
@@ -80,9 +78,9 @@ class Spychacz:
 
     # operatory
 
-    def __add__(self, other: 'int|Spychacz'):
+    def __add__(self, other: "int|Spychacz"):
         """Pokazuje przeciążenie operatora +."""
-        return 'nie wiem co zwrocic'
+        return "nie wiem co zwrocic"
 
     # and much more!!!
 
@@ -106,19 +104,17 @@ class Spychacz:
     # slicing
     def __getitem__(self, item):
         """Pokazuje, co trafia do operatora [], także przy wycinku."""
-        print('__getitem__', item)
+        print("__getitem__", item)
         return 12
 
     def __del__(self):
         """Destruktor; Python nie gwarantuje jego wywołania."""
-        print(
-            'destructor called for Spychacz, not guarantteed to be called'
-        )
+        print("destructor called for Spychacz, not guarantteed to be called")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # spychzcz is born in (0,0) facing up
-    s = Spychacz('kr12345')
+    s = Spychacz("kr12345")
 
     print(s)  # Spychacz kr12345 in (0, 0)
     s.jedz(10)
@@ -145,44 +141,27 @@ if __name__ == '__main__':
 
     # simple mistake - should have is not None
     if s:
-        print('not None')
+        print("not None")
     else:
-        print('None')
+        print("None")
 
-    s1 = Spychacz('wa12345')
+    s1 = Spychacz("wa12345")
     s + s1
 
     zbior = set()
     zbior.add(s)
     print(zbior)
-    s2 = Spychacz('kr12345')
+    s2 = Spychacz("kr12345")
     zbior.add(s2)
     print(zbior)
-    s.nr_rej = 'nowy'
+    s.nr_rej = "nowy"
     zbior.add(s)
     print(zbior)
     ls = [s1, s]
     ls.sort()
     print(ls)
     s[1]
-    s['asdasd']
-    s['asdasd':1.4:6]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    s["asdasd"]
+    s["asdasd":1.4:6]
 
     s + s1
-

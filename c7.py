@@ -1,4 +1,5 @@
 """Ćwiczenie: notowania NBP jako klasa będąca jednocześnie iterowalną i iteratorem. Wymaga sieci."""
+
 import requests
 import datetime as dt
 import typing
@@ -22,9 +23,11 @@ import typing
 #             yield rate
 #         date_to = date_from - td1
 
+
 class NBPGenerator:
     """Iterator notowań waluty, pobierający dane latami, wstecz od dzisiaj."""
-    url_template = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
+
+    url_template = "https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json"
 
     def __init__(self, currency: str):
         """Zapamiętuje walutę i zaczyna od bieżącej daty."""
@@ -41,7 +44,7 @@ class NBPGenerator:
         if r.status_code == 404:
             return
         r.raise_for_status()
-        self._data = reversed(r.json()['rates'])
+        self._data = reversed(r.json()["rates"])
         self.date_to = date_from - td1
 
     def __iter__(self):
@@ -55,9 +58,9 @@ class NBPGenerator:
         except StopIteration:
             self._doczytaj_rok()
             rate = next(self._data)
-        del rate['no']
-        rate['code'] = self.currency
-        rate['effectiveDate'] = dt.date.fromisoformat(rate['effectiveDate'])
+        del rate["no"]
+        rate["code"] = self.currency
+        rate["effectiveDate"] = dt.date.fromisoformat(rate["effectiveDate"])
         return rate
 
 
@@ -78,5 +81,5 @@ class NBPGenerator:
 
 
 if __name__ == "__main__":
-    for n in NBPGenerator('chf'):
+    for n in NBPGenerator("chf"):
         print(n)

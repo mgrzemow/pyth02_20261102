@@ -1,4 +1,5 @@
 """Jak działa pętla for: protokół iteracji krok po kroku."""
+
 from pathlib import Path
 
 
@@ -21,10 +22,10 @@ if __name__ == "__main__":
     print(it.__next__())
     # print(it.__next__())
 
-    print('asdasd'.__iter__())
-    print({1:11, 2:22}.__iter__())
+    print("asdasd".__iter__())
+    print({1: 11, 2: 22}.__iter__())
 
-    with open(Path(__file__).with_name('c1.py'), 'rt', encoding='utf') as f:
+    with open(Path(__file__).with_name("c1.py"), "rt", encoding="utf") as f:
         for line in f:
             print(line)
 

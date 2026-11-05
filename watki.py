@@ -1,18 +1,22 @@
 """Uruchamianie wątków przez threading."""
+
 import threading
 import multiprocessing
 import time
 from pprint import pprint
 
 d = {}
+
+
 def czekaj(n):
     """Czeka n sekund i zapisuje wynik we wspólnym słowniku."""
-    print(f'Watek {threading.current_thread().name} czeka {n} sekund...\n', end='')
+    print(f"Watek {threading.current_thread().name} czeka {n} sekund...\n", end="")
     time.sleep(n)
-    print(f'Watek {threading.current_thread().name} konczy...\n', end='')
-    d[threading.current_thread().name] = 'wynik'
+    print(f"Watek {threading.current_thread().name} konczy...\n", end="")
+    d[threading.current_thread().name] = "wynik"
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     watek1 = threading.Thread(target=czekaj, args=(3,))
     watek2 = threading.Thread(target=czekaj, args=(3,))
     watek3 = threading.Thread(target=czekaj, args=(3,))

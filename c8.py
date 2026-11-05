@@ -1,4 +1,5 @@
 """Ćwiczenie: notowania NBP z osobnym iteratorem, dzięki czemu iteracje są niezależne. Wymaga sieci."""
+
 import requests
 import datetime as dt
 import typing
@@ -22,11 +23,15 @@ import typing
 #             yield rate
 #         date_to = date_from - td1
 
+
 class NBPGenerator:
     """Obiekt iterowalny z notowaniami; każda iteracja dostaje własny iterator."""
-    url_template = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
+
+    url_template = "https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json"
+
     class NBPGeneratorIterator:
         """Iterator trzymający własną pozycję we wspólnych danych."""
+
         def __init__(self, g):
             """Zapamiętuje generator i zaczyna od pierwszego notowania."""
             self._g = g
@@ -38,9 +43,9 @@ class NBPGenerator:
                 self._g._doczytaj_rok()
             rate = self._g._data[self._i].copy()
             self._i += 1
-            del rate['no']
-            rate['code'] = self._g.currency
-            rate['effectiveDate'] = dt.date.fromisoformat(rate['effectiveDate'])
+            del rate["no"]
+            rate["code"] = self._g.currency
+            rate["effectiveDate"] = dt.date.fromisoformat(rate["effectiveDate"])
             return rate
 
         def __iter__(self):
@@ -63,7 +68,7 @@ class NBPGenerator:
         if r.status_code == 404:
             raise StopIteration()
         r.raise_for_status()
-        self._data += reversed(r.json()['rates'])
+        self._data += reversed(r.json()["rates"])
         self.date_to = date_from - td1
 
     def __iter__(self):
@@ -72,13 +77,13 @@ class NBPGenerator:
 
 
 if __name__ == "__main__":
-    g = NBPGenerator('chf')
+    g = NBPGenerator("chf")
     it1 = iter(g)
     it2 = iter(g)
 
     for i, n in zip(range(500), it1):
         ...
-        #print(n)
+        # print(n)
     print(1)
     for i, n in zip(range(500), it2):
         ...

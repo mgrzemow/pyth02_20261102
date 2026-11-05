@@ -20,7 +20,6 @@
 # while (imie := input('Podaj imie:')) != 'stop':
 #     print(imie)
 
-
 if __name__ == "__main__":
     # inne użycie
     h = 10
@@ -29,8 +28,8 @@ if __name__ == "__main__":
     print(s, v)
 
     # operatory słownikowe | i |=, od Pythona 3.9
-    d1 = {1:11, 2:22, 3:33}
-    d2 = {3:333, 4:444}
+    d1 = {1: 11, 2: 22, 3: 33}
+    d2 = {3: 333, 4: 444}
 
     print({**d1, **d2})
     print(d1 | d2)

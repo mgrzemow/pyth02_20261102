@@ -1,6 +1,6 @@
 """Grupowanie słów w słowniku, pułapka sort() oraz zmienne lokalne i globalne."""
-import collections
 
+import collections
 
 
 # for slowo in tekst.split():
@@ -25,14 +25,13 @@ def rob_liste():
     """Zwraca pustą listę: fabryka, którą można przekazać do defaultdict."""
     return []
 
-#
 
+#
 
 
 # .get
 # .setdefault
 # defaultdict
-
 
 
 def ustaw():
@@ -41,8 +40,6 @@ def ustaw():
     x = 7
     print("w funkcji:", x)
     return x
-
-
 
 
 def dodaj_do_koszyka(produkt, koszyk=None):
@@ -56,8 +53,8 @@ def dodaj_do_koszyka(produkt, koszyk=None):
 if __name__ == "__main__":
     tekst = "ala alicja alina beata bartek"
     {
-        'a': ['ala', 'alicja', 'alina'],
-        'b': ['beata', 'bartek'],
+        "a": ["ala", "alicja", "alina"],
+        "b": ["beata", "bartek"],
     }
     d = {}
     d = collections.defaultdict(list)
@@ -66,7 +63,7 @@ if __name__ == "__main__":
         w = d[pl]
         w.append(slowo)
     print(d)
-    x = [1,8,3,9,5,72]
+    x = [1, 8, 3, 9, 5, 72]
     y = x.sort()  # sort działa w miejscu i zwraca None
     print(y)
     x = 9
@@ -77,10 +74,6 @@ if __name__ == "__main__":
     # math.sqrt()
     # from math import sqrt
     # sqrt()
-
-
-
-
 
     x = ustaw()
     print("poza funkcją:", x)
