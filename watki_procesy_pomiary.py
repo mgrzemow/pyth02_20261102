@@ -1,11 +1,12 @@
+"""Pomiary wątków i procesów; symulowane I/O bez ruchu w sieci, trwa kilkanaście sekund."""
 import multiprocessing
 import threading
+import time
 import timeit
-
-import requests
 
 
 def fibo(n):
+    """Liczy wyraz ciągu Fibonacciego iteracyjnie; zadanie obciążające procesor."""
     # 1 1 2 3 5 8 13 21
     x1 = x2 = 1
 
@@ -15,16 +16,19 @@ def fibo(n):
 
 
 def n_times_fibo(m):
+    """Liczy Fibonacciego m razy."""
     for _ in range(m):
         fibo(10_000)
 
 
-def dos(n):
+def symuluj_io(n):
+    """Udaje n operacji czekania na sieć, bez ruchu w sieci."""
     for _ in range(n):
-        r = requests.get('http://gatling.io')
+        time.sleep(0.05)  # udaje czekanie na odpowiedź z sieci
 
 
 def run_in_parallel_thread(n_threads, n_operations, f):
+    """Dzieli operacje między wątki, uruchamia je i czeka na koniec."""
     op = n_operations // n_threads
     lista = []
     for _ in range(n_threads):
@@ -39,6 +43,7 @@ def run_in_parallel_thread(n_threads, n_operations, f):
 
 
 def run_in_parallel_process(n_processes, n_operations, f):
+    """Dzieli operacje między procesy, uruchamia je i czeka na koniec."""
     op = n_operations // n_processes
     lista = []
     for _ in range(n_processes):
@@ -54,5 +59,5 @@ def run_in_parallel_process(n_processes, n_operations, f):
 
 if __name__ == '__main__':
     for n in [32, 64, 128, 256]:
-        t = timeit.timeit(stmt=f'run_in_parallel_thread({n}, 4096, dos)', globals=globals(), number=1)
+        t = timeit.timeit(stmt=f'run_in_parallel_thread({n}, 4096, symuluj_io)', globals=globals(), number=1)
         print(f'{n}: {t:.2f}')

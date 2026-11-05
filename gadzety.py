@@ -1,3 +1,4 @@
+"""Operator := oraz operatory łączenia słowników."""
 # imie = input('Podaj imie:')
 # while imie != 'stop':
 #     print(imie)
@@ -19,17 +20,19 @@
 # while (imie := input('Podaj imie:')) != 'stop':
 #     print(imie)
 
-# inne użycie
-h = 10
-r = 10
-v = (s := 3.14 * r * r) * h
-print(s, v)
 
-# opearatory slownikowe | |=, new in 3.14
-d1 = {1:11, 2:22, 3:33}
-d2 = {3:333, 4:444}
+if __name__ == "__main__":
+    # inne użycie
+    h = 10
+    r = 10
+    v = (s := 3.14 * r * r) * h
+    print(s, v)
 
-print({**d1, **d2})
-print(d1 | d2)
-d1 |= d2
-print(d1)
+    # operatory słownikowe | i |=, od Pythona 3.9
+    d1 = {1:11, 2:22, 3:33}
+    d2 = {3:333, 4:444}
+
+    print({**d1, **d2})
+    print(d1 | d2)
+    d1 |= d2
+    print(d1)

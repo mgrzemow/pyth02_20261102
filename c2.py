@@ -1,4 +1,5 @@
-"""
+"""Ćwiczenie: numeracja i znacznik czasu dla linii pliku przez wyrażenia generatorowe.
+
 1. open a text file
 2. write 2 generator expressions:
    - prepends a line numer to a line
@@ -6,8 +7,10 @@
 3. print all the lines after passing them through these two gen expressions:
 """
 import datetime as dt
+from pathlib import Path
+
 if __name__ == '__main__':
-    with open('c1.py', 'rt', encoding='utf') as f:
+    with open(Path(__file__).with_name('c1.py'), 'rt', encoding='utf') as f:
         # timestamp
         g1 = (f'{dt.datetime.now()} {line}' for line in f)
         # line nr

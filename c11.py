@@ -1,13 +1,13 @@
-# napisać dekorator, który
-# próbuje skonwertować wartość zwracaną do int
-# jak się nie uda to próbuje do float
-# jak się nie uda do float to się wywala z ValueError
+"""Ćwiczenie: dekorator zamieniający ValueError na None, także dla funkcji wbudowanej."""
+# napisać dekorator, który zamienia ValueError z dekorowanej funkcji na None
 import functools
 
 
 def value_error_to_none(f_dekorowana):
+    """Dekorator zamieniający ValueError z funkcji na None."""
     @functools.wraps(f_dekorowana)
     def nowa_funkcja(*args, **kwargs):
+        """Wywołuje funkcję i przy ValueError zwraca None."""
         # przed
         try:
             return f_dekorowana(*args, **kwargs)

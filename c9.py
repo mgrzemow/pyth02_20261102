@@ -1,10 +1,13 @@
+"""Ćwiczenie: walidacja adresu IP przez property oraz działanie __slots__."""
 class Serwer:
+    """Serwer z adresem IP walidowanym przez property."""
     __slots__ = [
         # 'ip',
         '_ip'
     ]
 
     def _set_ip(self, ip):
+        """Sprawdza adres i zapisuje go jako krotkę liczb."""
         x = ip.split('.')
         self._ip = tuple(map(int, x))
         if len(self._ip) != 4:
@@ -13,11 +16,13 @@ class Serwer:
             raise ValueError('bad ip format - each section is between 0 and 255')
 
     def _get_ip(self):
+        """Zwraca adres jako napis."""
         return '.'.join(map(str, self._ip))
 
     ip = property(fget=_get_ip, fset=_set_ip)
 
     def __init__(self, ip: str):
+        """Ustawia adres przez property, więc też z walidacją."""
         self.ip = ip
 
 
@@ -26,12 +31,19 @@ if __name__ == '__main__':
     print(s.ip)
     s.ip = '192.168.1.1'
     print(s.ip)
-    print(s.atr)
+    # __slots__ blokuje atrybuty spoza listy
+    try:
+        print(s.atr)
+    except AttributeError as e:
+        print('AttributeError:', e)
 
     # te mają nie przejść
-    # s = Serwer('192.168.0.1.5')
-    # s.ip = '666.1.2.3'
-    # s.ip = '192.168.0.ala'
+    for bledny_ip in ['192.168.0.1.5', '666.1.2.3', '192.168.0.ala']:
+        try:
+            s.ip = bledny_ip
+        except ValueError as e:
+            print(bledny_ip, '->', e)
+
     # dodatkowa funkcjonalność:
     # internal format: (191,168,0,1)
     # validation:

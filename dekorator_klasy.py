@@ -1,5 +1,8 @@
+"""Dekorator klasy dodający atrybut i metodę."""
 def dekorator(klasa):
+    """Dodaje do klasy atrybut i metodę m1."""
     def m1(self, x, y):
+        """Metoda dodawana do klasy; woła m2."""
         print('m1', x, y)
         self.m2()
 
@@ -10,7 +13,9 @@ def dekorator(klasa):
 
 # @dekorator
 class A:
+    """Klasa rozszerzana przez dekorator."""
     def m2(self):
+        """Metoda wołana przez dodaną metodę m1."""
         print('m2')
     ...
 

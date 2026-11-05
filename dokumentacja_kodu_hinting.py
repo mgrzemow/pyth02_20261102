@@ -1,3 +1,4 @@
+"""Docstringi i podpowiedzi typów; plik wejściowy do generowania dokumentacji."""
 import typing
 
 # skąd uczyć się type hintów
@@ -5,7 +6,7 @@ import typing
 
 def do_potegi(podstawa: float, wykladnik: float) -> float|complex:
     """
-    This is a doctring with minimu syntax
+    This is a docstring with minimum syntax
 
     More info lore ipplsum lore ipplsumlore ipplsumlore ipplsumlore ipplsumlore ipplsumlore ipplsum
     lore ipplsumlore ipplsumlore ipplsumlore ipplsumlore ipplsumlore ipplsumlore ipplsum
@@ -16,14 +17,10 @@ def do_potegi(podstawa: float, wykladnik: float) -> float|complex:
     print(podstawa, wykladnik)
     return podstawa ** wykladnik
 
-# do_potegi(3, 2)
-#
-# print(typing.get_type_hints(do_potegi))
-
 # nie ma sposobu na ohintowanie listy jako rekordu
 def zwracam_rekord_liste(n: int) -> list[str|int]:
     """
-    firt line
+    first line
 
     more info more info more info more info more info more info more info more info more info
     more info more info more info more info more info more info more info more info more info
@@ -51,3 +48,7 @@ def zwracam_rekord_liste(n: int) -> list[str|int]:
 # - sphinx - DO NOT USE !!!
 # - pdoc pdoc3 - first step
 # - many others - some towards readthedocs
+
+if __name__ == "__main__":
+    do_potegi(3, 2)
+    print(typing.get_type_hints(do_potegi))

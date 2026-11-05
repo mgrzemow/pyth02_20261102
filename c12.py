@@ -1,3 +1,4 @@
+"""Ćwiczenie: dekorator z parametrami logujący wywołania; zapisuje log do log.txt."""
 # napisać dekokator logujący wywołania dekorowanej funkcji
 import functools
 import logging
@@ -28,13 +29,17 @@ l2 = logging.getLogger('l1.l2')
 
 
 class loguj_wywolania:
+    """Dekorator z parametrami logujący wywołania, wyniki i wyjątki."""
     def __init__(self, ok_level=logging.DEBUG, error_level=logging.ERROR):
+        """Zapamiętuje poziomy logowania dla sukcesu i błędu."""
         self.ok_level = ok_level
         self.error_level = error_level
 
     def __call__(self, f_dekorowana):
+        """Opakowuje dekorowaną funkcję."""
         @functools.wraps(f_dekorowana)
         def nowa_funkcja(*args, **kwargs):
+            """Loguje wywołanie i wynik, a wyjątek loguje i zgłasza dalej."""
             lgr = logging.getLogger(__name__)
             lgr.log(self.ok_level, f'wywoluje funkcje {f_dekorowana.__name__} z parametrami {args=} i {kwargs=}')
             try:
@@ -51,9 +56,14 @@ class loguj_wywolania:
 
 @loguj_wywolania()
 def f1(x, y):
+    """Dzieli x przez y."""
     return x / y
 
 
 if __name__ == '__main__':
     f1(1, 2)
-    f1(1, 0)
+    # dekorator loguje wyjątek i zgłasza go dalej
+    try:
+        f1(1, 0)
+    except ZeroDivisionError as e:
+        print('ZeroDivisionError:', e)

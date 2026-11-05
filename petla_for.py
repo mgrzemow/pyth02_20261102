@@ -1,30 +1,35 @@
-x = [1, 2, 3, 4]
+"""Jak działa pętla for: protokół iteracji krok po kroku."""
+from pathlib import Path
 
-for e in x:
-    print(e)
 
-# side note - most of global functions delegate calls to methods
-# if we have a function aaa(object), then it will call object.__aaa__()
+if __name__ == "__main__":
+    x = [1, 2, 3, 4]
 
-# it = iter(x)
-it = x.__iter__()
-print(it)
-# print(next(it))
-print(it.__next__())
-print(it.__next__())
-print(it.__next__())
-print(it.__next__())
-# print(it.__next__())
+    for e in x:
+        print(e)
 
-print('asdasd'.__iter__())
-print({1:11, 2:22}.__iter__())
+    # side note - most of global functions delegate calls to methods
+    # if we have a function aaa(object), then it will call object.__aaa__()
 
-with open('c1.py', 'rt', encoding='utf') as f:
-    for line in f:
-        print(line)
+    # it = iter(x)
+    it = x.__iter__()
+    print(it)
+    # print(next(it))
+    print(it.__next__())
+    print(it.__next__())
+    print(it.__next__())
+    print(it.__next__())
+    # print(it.__next__())
 
-# how to devepot magic object which are iterable and calculate
-# results on the fly
-# 1. generator expressions
-# 2. functions with yield
-# 3. classes with __iter__ and __next__
+    print('asdasd'.__iter__())
+    print({1:11, 2:22}.__iter__())
+
+    with open(Path(__file__).with_name('c1.py'), 'rt', encoding='utf') as f:
+        for line in f:
+            print(line)
+
+    # how to devepot magic object which are iterable and calculate
+    # results on the fly
+    # 1. generator expressions
+    # 2. functions with yield
+    # 3. classes with __iter__ and __next__

@@ -1,3 +1,4 @@
+"""Ćwiczenie: notowania NBP jako klasa będąca jednocześnie iterowalną i iteratorem. Wymaga sieci."""
 import requests
 import datetime as dt
 import typing
@@ -22,14 +23,17 @@ import typing
 #         date_to = date_from - td1
 
 class NBPGenerator:
+    """Iterator notowań waluty, pobierający dane latami, wstecz od dzisiaj."""
     url_template = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'
 
     def __init__(self, currency: str):
+        """Zapamiętuje walutę i zaczyna od bieżącej daty."""
         self.date_to = dt.date.today()
         self.currency = currency
         self._data = iter([])
 
     def _doczytaj_rok(self):
+        """Pobiera kolejny rok notowań; po 404 nie zmienia danych."""
         td1 = dt.timedelta(days=1)
         date_from = self.date_to - 365 * td1
         url = self.__class__.url_template.format(self.currency, date_from, self.date_to)
@@ -41,9 +45,11 @@ class NBPGenerator:
         self.date_to = date_from - td1
 
     def __iter__(self):
+        """Zwraca samego siebie, więc można przejść po danych tylko raz."""
         return self
 
     def __next__(self):
+        """Zwraca następne notowanie, w razie potrzeby doczytując kolejny rok."""
         try:
             rate = next(self._data)
         except StopIteration:
@@ -71,5 +77,6 @@ class NBPGenerator:
 #             raise StopIteration
 
 
-for n in NBPGenerator('chf'):
-    print(n)
+if __name__ == "__main__":
+    for n in NBPGenerator('chf'):
+        print(n)
