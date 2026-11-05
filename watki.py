@@ -1,7 +1,6 @@
 """Uruchamianie wątków przez threading."""
 
 import threading
-import multiprocessing
 import time
 from pprint import pprint
 

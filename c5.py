@@ -85,16 +85,15 @@ class Spychacz:
     # and much more!!!
 
     # hashing - I MUST implement both!!!
-    # UWAGA: hash używa też x i y, a __eq__ tylko nr_rej, więc dwa równe obiekty
-    # mogą mieć różne hashe; poprawna wersja używa w obu tych samych pól
+    # najprościej: hash z krotki pól; __eq__ musi porównywać te same pola
     def __hash__(self):
         """Zwraca hash z numeru i pozycji."""
         # how to calculate hash of a number of atributes
         return hash((self.nr_rej, self._x, self._y))
 
     def __eq__(self, other):
-        """Porównuje spychacze po numerze rejestracyjnym."""
-        return self.nr_rej == other.nr_rej
+        """Porównuje spychacze po numerze i pozycji, czyli po tych samych polach co hash."""
+        return (self.nr_rej, self._x, self._y) == (other.nr_rej, other._x, other._y)
 
     # needed for sorting
     def __lt__(self, other):

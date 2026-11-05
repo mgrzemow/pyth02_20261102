@@ -18,7 +18,7 @@ def to_int_or_float(f_dekorowana):
         # po
         try:
             return int(r)
-        except ValueError as e:
+        except ValueError:
             ...
 
         try:
@@ -38,7 +38,7 @@ def f(x):
 if __name__ == "__main__":
     print(f("1"))
     print(f("1.4"))
-    print(f(1.5))
+    print(f(1.5))  # int(1.5) obcina część ułamkową, więc wynik to 1
     # tej wartości nie da się skonwertować, więc dekorator zgłasza ValueError
     try:
         print(f("asdasd"))

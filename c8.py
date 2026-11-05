@@ -2,7 +2,6 @@
 
 import requests
 import datetime as dt
-import typing
 
 # def generatorNBP(currency: str) -> typing.Iterator[dict]:
 #     url_tempate = 'https://api.nbp.pl/api/exchangerates/rates/c/{}/{}/{}/?format=json'

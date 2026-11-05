@@ -24,6 +24,11 @@ class Serwer:
 
     ip = property(fget=_get_ip, fset=_set_ip)
 
+    @property
+    def ip_tuple(self):
+        """Zwraca adres jako krotkę liczb; właściwość tylko do odczytu."""
+        return self._ip
+
     def __init__(self, ip: str):
         """Ustawia adres przez property, więc też z walidacją."""
         self.ip = ip
@@ -34,6 +39,7 @@ if __name__ == "__main__":
     print(s.ip)
     s.ip = "192.168.1.1"
     print(s.ip)
+    print(s.ip_tuple)
     # __slots__ blokuje atrybuty spoza listy
     try:
         print(s.atr)

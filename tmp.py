@@ -25,7 +25,7 @@ def f(x):
 
 
 if __name__ == "__main__":
-    # można jako lambda ale po co?
+    # można zapisać jako lambda: to działa, ale jest koszmarnie nieczytelne
     dekorator_x_2 = lambda f: functools.wraps(f)(
         lambda *args, **kwargs: 2 * f(*args, **kwargs)
     )

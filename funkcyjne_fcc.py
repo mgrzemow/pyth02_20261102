@@ -1,6 +1,6 @@
 """Funkcje jako obiekty: map, filter, reduce, lru_cache i partial."""
 
-import collections
+import collections  # noqa: F401 (potrzebne w zakomentowanym przykładzie z f4)
 
 
 def add(x, y):
