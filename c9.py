@@ -1,4 +1,7 @@
 class Serwer:
+    __slots__ = [
+        'ip',
+    ]
     def __init__(self, ip:str):
         self.ip = ip
 
@@ -8,6 +11,8 @@ if __name__ == '__main__':
     print(s.ip)
     s.ip = '192.168.1.1'
     print(s.ip)
+
+    # te mają nie przejść
     s = Serwer('192.168.0.1.5')
     s.ip = '666.1.2.3'
     s.ip = '192.168.0.ala'

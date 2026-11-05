@@ -30,6 +30,7 @@ class Czlowiek:
 
     @imie_nazwisko.setter
     def imie_nazwisko(self, imie_nazwisko):
+        print('setter')
         self._imie, self._nazwisko = imie_nazwisko.split()
 
     def __init__(self, imie_nazwisko):
@@ -41,7 +42,7 @@ class Czlowiek:
 
 if __name__ == '__main__':
     a = Czlowiek('Ala Kowalska')
-    print(a.imie_nazwisko)
-    a.imie_nazwisko = 'ala nowak'
-    print(a.imie_nazwisko)
-    print(a.imie_nazwisko_title)
+    # print(a.imie_nazwisko)
+    # a.imie_nazwisko = 'ala nowak'
+    # print(a.imie_nazwisko)
+    # print(a.imie_nazwisko_title)
