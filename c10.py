@@ -8,10 +8,18 @@ import functools
 def to_int_or_float(f_dekorowana):
     @functools.wraps(f_dekorowana)
     def nowa_funkcja(*args, **kwargs):
-        print('nowa_funkcja przed wywolaniem oryginalnej', args, kwargs)
+        # przed
         r = f_dekorowana(*args, **kwargs)
-        print('nowa_funkcja po wywolaniu oryginalnej', args, kwargs, r)
-        return r
+        # po
+        try:
+            return int(r)
+        except ValueError as e:
+            ...
+
+        try:
+            return float(r)
+        except ValueError as e:
+            raise ValueError('Moj error message') from e
     return nowa_funkcja
 
 @to_int_or_float

@@ -1,0 +1,1 @@
+# dodatkowa konfiguracja dla logger o id: 'p1'
