@@ -8,8 +8,8 @@ koszyk =  {
 }
 # https://api.nbp.pl/api/exchangerates/rates/a/chf/?format=json
 import requests
-r = requests.get
-r.json()
+# r = requests.get
+# r.json()
 
 #  wycenic ten koszyk walut w oparciu o kurs walutowy
 # wziety z api nbp
@@ -21,6 +21,7 @@ def pobierz_kurs_waluty(waluta):
     return r.json()['rates'][0]['mid']
 
 if __name__ == '__main__':
-    with concurrent futures:
-        map
+    print(pobierz_kurs_waluty('usd'))
+    # with concurrent futures:
+    #     map
         #poskładać
