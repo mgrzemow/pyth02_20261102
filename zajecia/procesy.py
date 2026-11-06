@@ -4,6 +4,7 @@ import multiprocessing
 import time
 
 
+
 def czekaj(n):
     """Czeka n sekund i wypisuje nazwę procesu."""
     print(f"Proces {multiprocessing.current_process().name} czeka {n} sekund...\n", end="")
@@ -12,10 +13,10 @@ def czekaj(n):
 
 
 if __name__ == "__main__":
-    proces1 = multiprocessing.Process(target=czekaj, args=(3,))
-    proces2 = multiprocessing.Process(target=czekaj, args=(3,))
-    proces3 = multiprocessing.Process(target=czekaj, args=(3,))
-    proces4 = multiprocessing.Process(target=czekaj, args=(3,))
+    proces1 = multiprocessing.Process(target=czekaj, args=(3,), daemon=True)
+    proces2 = multiprocessing.Process(target=czekaj, args=(3,), daemon=True)
+    proces3 = multiprocessing.Process(target=czekaj, args=(3,), daemon=True)
+    proces4 = multiprocessing.Process(target=czekaj, args=(3,), daemon=True)
     proces1.start()
     proces2.start()
     proces3.start()
@@ -24,3 +25,5 @@ if __name__ == "__main__":
     proces2.join()
     proces3.join()
     proces4.join()
+
+    print('wychodze')
