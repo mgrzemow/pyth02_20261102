@@ -14,3 +14,13 @@ r.json()
 #  wycenic ten koszyk walut w oparciu o kurs walutowy
 # wziety z api nbp
 # uzyc concurrent.futures.ThreadPoolExecutor
+
+def pobierz_kurs_waluty(waluta):
+    url = f"https://api.nbp.pl/api/exchangerates/rates/a/{waluta}/?format=json"
+    r = requests.get(url)
+    return r.json()['rates'][0]['mid']
+
+if __name__ == '__main__':
+    with concurrent futures:
+        map
+        #poskładać
