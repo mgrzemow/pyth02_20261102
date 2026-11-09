@@ -15,14 +15,14 @@ def czekaj(n, d, l, v):
 if __name__ == "__main__":
     with multiprocessing.Manager() as manager:
         d = manager.dict()
-        l  = manager.list()
+        l = manager.list()
         v = manager.Value("i", 0)
-        q = manager.Queue() # faster but you have to develop code around it
+        q = manager.Queue()  # faster but you have to develop code around it
 
-        proces1 = multiprocessing.Process(target=czekaj, args=(3,d,l,v))
-        proces2 = multiprocessing.Process(target=czekaj, args=(3,d,l,v))
-        proces3 = multiprocessing.Process(target=czekaj, args=(3,d,l,v))
-        proces4 = multiprocessing.Process(target=czekaj, args=(3,d,l,v))
+        proces1 = multiprocessing.Process(target=czekaj, args=(3, d, l, v))
+        proces2 = multiprocessing.Process(target=czekaj, args=(3, d, l, v))
+        proces3 = multiprocessing.Process(target=czekaj, args=(3, d, l, v))
+        proces4 = multiprocessing.Process(target=czekaj, args=(3, d, l, v))
         proces1.start()
         proces2.start()
         proces3.start()

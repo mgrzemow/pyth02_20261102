@@ -4,7 +4,6 @@ import multiprocessing
 import time
 
 
-
 def czekaj(n):
     """Czeka n sekund i wypisuje nazwę procesu."""
     print(f"Proces {multiprocessing.current_process().name} czeka {n} sekund...\n", end="")
@@ -26,4 +25,4 @@ if __name__ == "__main__":
     proces3.join()
     proces4.join()
 
-    print('wychodze')
+    print("wychodze")

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PYTH02 · 27s. Nowoczesne asyncio — skrót na 30 minut</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/github.css">
+<style>
+  :root { --r-main-font-size: 30px; --r-heading-color: #306998; --r-link-color: #306998; }
+  .reveal h1, .reveal h2 { font-size: 1.6em; text-transform: none; }
+  .reveal section.tytulowy img { float: right; max-height: 42vh; margin: 0 0 0 1.5em; }
+  .reveal img { max-height: 38vh; border: none; box-shadow: none; }
+  .reveal img[alt^="Diagram"] { display: block; width: 100%; max-height: 440px; object-fit: contain; margin: 0.2em auto; }
+  .reveal pre { width: 100%; font-size: 0.8em; box-shadow: none; }
+  .reveal code { font-family: ui-monospace, Consolas, monospace; }
+  .reveal pre code { white-space: pre-wrap !important; overflow-wrap: anywhere; max-height: 560px; }
+  .reveal ul, .reveal ol { display: block; }
+  .reveal table { font-size: 0.62em; margin: 0; }
+  .reveal table th, .reveal table td { padding: 0.25em 0.8em; }
+  .reveal table tr.fragment:not(.visible) td { border-color: transparent; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section > h2 { border-bottom: 3px solid #ffd43b; padding-bottom: 0.2em; }
+  .reveal section.zagadka { font-size: 0.78em; }
+  .reveal section.zagadka h2 { font-size: 1.7em; margin-bottom: 0.2em; }
+  .reveal section.zagadka pre { margin: 0.3em 0; font-size: 1.05em; }
+  .reveal section.zagadka ul { list-style: none; margin-left: 0; }
+  .reveal section.zagadka li { margin: 0.15em 0; }
+  .reveal .pliki { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+  .reveal .pliki p { margin: 0; font-size: 0.8em; }
+  .reveal .pliki pre { font-size: 0.62em; }
+  .reveal section.zagadka-pliki pre { font-size: 0.85em; }
+  .reveal section.zagadka-pliki li { font-size: 0.85em; }
+  .reveal .zagadka-meta { color: #68717f; font-size: 0.75em; margin: 0 0 0.4em; }
+  .reveal .odpowiedz { background: #e8f5ec; border-left: 6px solid #1a7f37; padding: 0.3em 0.6em; }
+  .stopka { position: fixed; bottom: 12px; left: 20px; font: 14px system-ui, sans-serif; color: #68717f; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="stopka"><strong>PYTH02</strong> · Zaawansowane programowanie w języku Python · Michał Grzemowski</div>
+<div class="reveal"><div class="slides">
+<section data-markdown class="tytulowy"><textarea data-template>
+## Asyncio — wiele zadań w jednym wątku
+
+- **po co** to jest i **jak działa** pod spodem
+- `async`, `await` i `TaskGroup`
+- trzy rzeczy, których trzeba pilnować
+- `httpx`: co się zmienia po `requests`
+- na koniec jedno krótkie ćwiczenie
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Program głównie czeka
+
+![Diagram: trzy żądania wykonywane jedno po drugim; prawie cały czas to czekanie na sieć](img/27s_czekanie.svg)
+
+Wątek stoi bezczynnie, choć mógłby w tym czasie obsłużyć następne żądanie.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Kelner, nie kucharz
+
+Jeden kelner obsługuje 20 stolików, bo **nie stoi przy stoliku, gdy kuchnia gotuje**.
+
+| W restauracji | W programie |
+|---|---|
+| kelner | jeden wątek |
+| stolik | zadanie (*task*) |
+| kuchnia | sieć, dysk, baza danych |
+| „danie gotowe!” | zdarzenie z systemu operacyjnego |
+
+To działa tylko wtedy, gdy kelner **sam nie gotuje**. Wrócimy do tego przy pułapkach.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Pętla zdarzeń to zwykła pętla
+
+```py
+while są_zadania:
+    # każde zadanie działa do najbliższego await
+    uruchom po kolei wszystkie gotowe zadania
+    uśpij wątek, aż system zgłosi, że coś się skończyło
+    przenieś zadania, na które to czekały, do gotowych
+```
+
+**Pętla nie przerywa zadań. Czeka, aż same oddadzą sterowanie na `await`.**
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Przykład: kelner pobiera kursy walut
+
+Program ma pobrać z serwera NBP dwa kursy: **EUR** i **USD**. To nasze dwa stoliki.
+
+| W restauracji | W programie |
+|---|---|
+| dwa stoliki czekają na obsługę | dwa zadania: „pobierz EUR”, „pobierz USD” |
+| kelner zanosi zamówienie do kuchni | zadanie wysyła żądanie do NBP i dochodzi do `await` |
+| kelner idzie do następnego stolika | wątek uruchamia następne zadanie |
+| oba zamówienia są w kuchni, kelner odpoczywa | oba zadania czekają, wątek śpi |
+| „danie gotowe!”, kelner je podaje | przyszła odpowiedź, zadanie kończy pracę |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Krok po kroku
+
+<table>
+<thead><tr><th>Krok</th><th>Co się dzieje</th><th>Działa</th><th>Gotowe</th><th>Czekają</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Start: oba zadania zgłoszone</td><td>–</td><td>EUR, USD</td><td>–</td></tr>
+<tr class="fragment"><td>2</td><td>EUR wysyła żądanie i dochodzi do <code>await</code></td><td>EUR</td><td>USD</td><td>–</td></tr>
+<tr class="fragment"><td>3</td><td>USD wysyła żądanie i dochodzi do <code>await</code></td><td>USD</td><td>–</td><td>EUR</td></tr>
+<tr class="fragment"><td>4</td><td>Nie ma nic do zrobienia, wątek śpi</td><td>–</td><td>–</td><td>EUR, USD</td></tr>
+<tr class="fragment"><td>5</td><td>System: „przyszła odpowiedź dla EUR”</td><td>–</td><td>EUR</td><td>USD</td></tr>
+<tr class="fragment"><td>6</td><td>EUR kończy pracę</td><td>EUR</td><td>–</td><td>USD</td></tr>
+<tr class="fragment"><td>7</td><td>System: „przyszła odpowiedź dla USD”</td><td>–</td><td>USD</td><td>–</td></tr>
+<tr class="fragment"><td>8</td><td>USD kończy pracę, zadań już nie ma</td><td>USD</td><td>–</td><td>–</td></tr>
+</tbody>
+</table>
+</textarea></section>
+<section data-markdown><textarea data-template>
+## To samo w czasie
+
+![Diagram: zadania EUR i USD w jednym wątku; ich kod wykonuje się na zmianę, a czekanie się nakłada](img/27s_w_czasie.svg)
+
+To **współbieżność**, nie równoległość: czekanie się nakłada, a kod działa na zmianę.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Trzy pojęcia
+
+- **korutyna** (`async def`): funkcja, która umie się zatrzymać i wznowić
+- **`await`**: „tu czekam, w tym czasie niech działa ktoś inny”
+- **task**: korutyna przekazana pętli do wykonania
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Pierwsza korutyna
+
+```python
+import asyncio
+import time
+
+async def pobierz(nazwa, czas):
+    print("start", nazwa)
+    await asyncio.sleep(czas)      # udaje czekanie na sieć
+    print("koniec", nazwa)
+    return f"wynik {nazwa}"
+
+await pobierz("EUR", 1)
+```
+
+W pliku `.py` pętlę uruchamia `asyncio.run` `[3.7+]`. W Jupyterze i w `python -m asyncio` pętla
+już działa, więc wystarczy samo `await`.
+
+```py
+asyncio.run(main())    # w skrypcie: main() to Twoja główna korutyna
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `await` po `await` to nadal kolejka
+
+```python
+start = time.perf_counter()
+
+await pobierz("EUR", 1)
+await pobierz("USD", 1)
+
+print(f"{time.perf_counter() - start:.1f} s")   # 2.0 s
+```
+
+`await` czeka na wynik, zanim przejdzie dalej. Żeby zadania szły razem, trzeba je **zgłosić pętli**.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `TaskGroup` uruchamia zadania razem `[3.11+]`
+
+```python
+start = time.perf_counter()
+
+async with asyncio.TaskGroup() as tg:
+    eur = tg.create_task(pobierz("EUR", 1))
+    usd = tg.create_task(pobierz("USD", 1))
+
+print(eur.result(), usd.result())
+print(f"{time.perf_counter() - start:.1f} s")   # 1.0 s
+```
+
+- `create_task` zgłasza zadanie pętli i od razu idzie dalej
+- blok `async with` kończy się, gdy **wszystkie** zadania są gotowe
+- wyniki odczytujemy po bloku przez `.result()`
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Ta sama praca, inny czas
+
+![Diagram: dwa await po kolei trwają 2 s, a TaskGroup z tymi samymi zadaniami 1 s](img/27s_kolejno_taskgroup.svg)
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Pułapka 1: kelner, który gotuje
+
+![Diagram: asyncio.sleep pozwala zadaniom czekać razem, a time.sleep blokuje wątek i zadania idą po kolei](img/27s_blokada.svg)
+
+Pętlę blokuje każdy kod bez `await`: `time.sleep`, **`requests.get`**, długie obliczenia.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Blokujący kod wysyłamy do wątku `[3.9+]`
+
+```python
+async def blokuje():
+    time.sleep(1)
+
+async def nie_blokuje():
+    await asyncio.to_thread(time.sleep, 1)
+
+for funkcja in (blokuje, nie_blokuje):
+    start = time.perf_counter()
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(funkcja())
+        tg.create_task(funkcja())
+    print(funkcja.__name__, f"{time.perf_counter() - start:.1f} s")
+```
+
+`to_thread` nadaje się do blokującego I/O. Na ciężkie obliczenia są procesy.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Pułapka 2: błąd w jednym zadaniu
+
+```python
+async def zadanie(nazwa, czas, blad=False):
+    try:
+        await asyncio.sleep(czas)
+        if blad:
+            raise ValueError(nazwa)
+        print("koniec", nazwa)
+    finally:
+        print("finally", nazwa)
+
+try:
+    async with asyncio.TaskGroup() as tg:
+        tg.create_task(zadanie("A", 0.1))
+        tg.create_task(zadanie("B", 0.2, blad=True))
+        tg.create_task(zadanie("C", 0.3))
+except* ValueError as grupa:
+    print("złapane", grupa.exceptions)
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Jeden błąd anuluje resztę grupy
+
+![Diagram: B zgłasza błąd po 0,2 s, więc TaskGroup anuluje C; A zdążyło się skończyć](img/27s_blad.svg)
+
+- `except*` `[3.11+]` łapie wyjątki z grupy; zwykłe `except ValueError` tu **nie zadziała**
+- błąd, który nie ma przerywać reszty, łapiemy **wewnątrz** zadania
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Limit czasu `[3.11+]`
+
+```python
+try:
+    async with asyncio.timeout(0.5):
+        await pobierz("wolne API", 2)
+except TimeoutError:
+    print("za długo")
+```
+
+- po 0,5 s zadanie jest anulowane, a na wyjściu z bloku leci `TimeoutError`
+- działa tylko wtedy, gdy **pętla jest wolna**: `time.sleep(2)` w środku przejdzie bez błędu
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Z `requests` na `httpx`: to samo
+
+`requests.get` blokuje pętlę, więc w asyncio potrzebny jest klient asynchroniczny, np. `httpx`.
+
+| Zadanie | `requests` | `httpx` |
+|---|---|---|
+| GET z parametrami | `requests.get(url, params=p)` | `httpx.get(url, params=p)` |
+| nagłówki | `headers=h` | `headers=h` |
+| POST z JSON-em | `requests.post(url, json=d)` | `httpx.post(url, json=d)` |
+| POST z formularzem | `data=d` | `data=d` |
+| odczyt odpowiedzi | `r.status_code`, `r.text`, `r.json()` | `r.status_code`, `r.text`, `r.json()` |
+| błąd przy 4xx i 5xx | `r.raise_for_status()` | `r.raise_for_status()` |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Z `requests` na `httpx`: różnice
+
+| Zadanie | `requests` | `httpx` |
+|---|---|---|
+| domyślny timeout | **brak**, może czekać bez końca | **5 s** |
+| przekierowania | **podąża** sam | **nie podąża**: `follow_redirects=True` |
+| surowe bajty w POST | `data=b"..."` | `content=b"..."` |
+| czy się udało | `r.ok` (kod < 400) | `r.is_success` (2xx) |
+| sesja, wspólne połączenia | `requests.Session()` | `httpx.Client()` |
+| duża odpowiedź | `get(url, stream=True)`, `iter_content()` | `httpx.stream("GET", url)`, `iter_bytes()` |
+| główny wyjątek | `requests.RequestException` | `httpx.HTTPError` |
+| asyncio | brak | `httpx.AsyncClient()` |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Kursy z NBP przez `AsyncClient`
+
+```python
+import httpx
+
+URL = "https://api.nbp.pl/api/exchangerates/rates/a/{}/?format=json"
+WALUTY = ["eur", "usd", "chf"]
+
+async def kurs(client, waluta):
+    odpowiedz = await client.get(URL.format(waluta))
+    odpowiedz.raise_for_status()
+    return waluta, odpowiedz.json()["rates"][0]["mid"]
+
+async with httpx.AsyncClient() as client:
+    async with asyncio.TaskGroup() as tg:
+        zadania = [tg.create_task(kurs(client, w)) for w in WALUTY]
+
+print(dict(z.result() for z in zadania))
+```
+
+Jeden klient na wszystkie zadania: `get` jest metodą klienta, a różnica to tylko `await`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Komplet: limit, timeout i błędy
+
+```python
+async def pobierz_wszystkie(urls, client, naraz=10, limit_s=5):
+    limit = asyncio.Semaphore(naraz)     # najwyżej tyle zadań naraz
+
+    async def jeden(url):
+        async with limit:
+            try:
+                async with asyncio.timeout(limit_s):
+                    odpowiedz = await client.get(url)
+                    odpowiedz.raise_for_status()
+                    return url, odpowiedz.json()
+            except (httpx.HTTPError, TimeoutError) as blad:
+                return url, blad
+
+    async with asyncio.TaskGroup() as tg:
+        zadania = [tg.create_task(jeden(u)) for u in urls]
+    return [z.result() for z in zadania]
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Komplet: użycie i trzy decyzje
+
+```python
+urls = [URL.format(w) for w in ["eur", "xxx"]]
+
+async with httpx.AsyncClient() as client:
+    wyniki = await pobierz_wszystkie(urls, client)
+
+print(wyniki[1][1])       # 404 dla xxx, a eur przechodzi
+```
+
+- błąd łapiemy **w zadaniu**, żeby nie anulować reszty grupy
+- `timeout` jest **wewnątrz** semafora, żeby kolejka nie zużywała limitu czasu
+- wymieniamy **konkretne** wyjątki, żeby prawdziwe bugi nadal były widoczne
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Kiedy co wybrać
+
+| Sytuacja | Narzędzie |
+|---|---|
+| obliczenia, procesor pracuje | **procesy** |
+| I/O, kilka lub kilkadziesiąt połączeń, kod blokujący | **wątki**, `concurrent.futures` |
+| I/O, setki połączeń albo biblioteki async | **asyncio** |
+
+**Asyncio nie przyspiesza kodu. Pozwala czekać na wiele rzeczy naraz.**
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Ćwiczenie: śniadanie
+
+Przygotuj współbieżnie przez `TaskGroup`: kawę (3 s), tost (2 s) i jajka (1 s). Wypisz listę wyników.
+
+```python
+async def przygotuj(nazwa, czas):
+    print("start:", nazwa)
+    await asyncio.sleep(czas)
+    print("gotowe:", nazwa)
+    return nazwa
+
+start = time.perf_counter()
+# Twój kod tutaj
+print(f"{time.perf_counter() - start:.1f} s")
+```
+
+Spodziewany czas: **około 3 s**. Dla chętnych: co zmieni `asyncio.timeout(1.5)` wokół całej grupy?
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Dodatek: czy jest `to_process`?
+
+Nie ma, ale `loop.run_in_executor` **łączy `asyncio` z `concurrent.futures`**: zleca funkcję do puli
+i zwraca obiekt, na który można czekać przez `await`.
+
+```py
+import asyncio
+from concurrent.futures import ProcessPoolExecutor
+
+def policz(n):
+    return sum(i * i for i in range(n))
+
+async def to_process(pula, funkcja, *args):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(pula, funkcja, *args)
+```
+
+`to_process` to nasz własny pomocnik, a nie część `asyncio`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Dodatek: `to_process` w użyciu
+
+```py
+async def main():
+    with ProcessPoolExecutor() as pula:
+        async with asyncio.TaskGroup() as tg:
+            zadania = [
+                tg.create_task(to_process(pula, policz, 20_000_000))
+                for _ in range(4)
+            ]
+    print([z.result() for z in zadania])
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+Uruchamiamy jako plik `.py`, bo w notebooku na Windowsie to zwykle nie zadziała.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Dodatek: `to_thread` czy procesy?
+
+| Cztery obliczenia po 1,7 s | Czas |
+|---|---|
+| `ProcessPoolExecutor` | **2,0 s** |
+| `to_thread` | **13,9 s** |
+
+- obliczenia w wątkach walczą o GIL, więc `to_thread` służy do blokującego **I/O**
+- pulę tworzymy sami, najlepiej jedną na cały program
+- funkcja i dane muszą dać się **spicklować**, więc funkcja musi być na poziomie modułu
+- anulowanie przerywa tylko czekanie, obliczenie działa dalej
+</textarea></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({ hash: true, slideNumber: 'c/t', plugins: [RevealMarkdown, RevealHighlight, RevealNotes] });
+</script>
+</body>
+</html>

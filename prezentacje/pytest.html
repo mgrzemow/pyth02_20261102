@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PYTH02 · 05s. pytest — skrót na 30 minut, z odniesieniami do C#</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/github.css">
+<style>
+  :root { --r-main-font-size: 30px; --r-heading-color: #306998; --r-link-color: #306998; }
+  .reveal h1, .reveal h2 { font-size: 1.6em; text-transform: none; }
+  .reveal section.tytulowy img { float: right; max-height: 42vh; margin: 0 0 0 1.5em; }
+  .reveal img { max-height: 38vh; border: none; box-shadow: none; }
+  .reveal img[alt^="Diagram"] { display: block; width: 100%; max-height: 440px; object-fit: contain; margin: 0.2em auto; }
+  .reveal pre { width: 100%; font-size: 0.8em; box-shadow: none; }
+  .reveal code { font-family: ui-monospace, Consolas, monospace; }
+  .reveal pre code { white-space: pre-wrap !important; overflow-wrap: anywhere; max-height: 560px; }
+  .reveal ul, .reveal ol { display: block; }
+  .reveal table { font-size: 0.62em; margin: 0; }
+  .reveal table th, .reveal table td { padding: 0.25em 0.8em; }
+  .reveal table tr.fragment:not(.visible) td { border-color: transparent; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section > h2 { border-bottom: 3px solid #ffd43b; padding-bottom: 0.2em; }
+  .reveal section.zagadka { font-size: 0.78em; }
+  .reveal section.zagadka h2 { font-size: 1.7em; margin-bottom: 0.2em; }
+  .reveal section.zagadka pre { margin: 0.3em 0; font-size: 1.05em; }
+  .reveal section.zagadka ul { list-style: none; margin-left: 0; }
+  .reveal section.zagadka li { margin: 0.15em 0; }
+  .reveal .pliki { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+  .reveal .pliki p { margin: 0; font-size: 0.8em; }
+  .reveal .pliki pre { font-size: 0.62em; }
+  .reveal section.zagadka-pliki pre { font-size: 0.85em; }
+  .reveal section.zagadka-pliki li { font-size: 0.85em; }
+  .reveal .zagadka-meta { color: #68717f; font-size: 0.75em; margin: 0 0 0.4em; }
+  .reveal .odpowiedz { background: #e8f5ec; border-left: 6px solid #1a7f37; padding: 0.3em 0.6em; }
+  .stopka { position: fixed; bottom: 12px; left: 20px; font: 14px system-ui, sans-serif; color: #68717f; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="stopka"><strong>PYTH02</strong> · Zaawansowane programowanie w języku Python · Michał Grzemowski</div>
+<div class="reveal"><div class="slides">
+<section data-markdown class="tytulowy"><textarea data-template>
+## pytest: testowanie po pythonowemu
+
+- podstawy testów automatycznych i odkrywanie testów
+- asercje, `parametrize`, fixtures
+- uruchamianie i konfiguracja
+- izolacja: `monkeypatch` i `MagicMock`
+
+Część grupy zna testy z C#, więc pokazujemy też odpowiedniki z tego języka.
+Znajomość C# **nie jest potrzebna**: każde odniesienie jest objaśnione.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Po co testy automatyczne
+
+| Rodzaj | Co sprawdza | Szybkość | Ile |
+|---|---|---|---|
+| jednostkowe | jedną funkcję lub klasę, bez sieci i bazy | milisekundy | najwięcej |
+| integracyjne | współpracę z bazą, plikami, usługą | sekundy | mniej |
+| end-to-end | cały system z zewnątrz | minuty | najmniej |
+
+- **siatka bezpieczeństwa**: zmieniasz kod i od razu wiesz, co się zepsuło
+- **żywa dokumentacja**: test pokazuje, jak używać kodu
+- układ testu: **Arrange** (przygotuj), **Act** (wykonaj), **Assert** (sprawdź)
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Pierwszy test
+
+```python
+# kursy.py
+def przelicz(kwota, kurs):
+    if kurs <= 0:
+        raise ValueError("kurs musi być dodatni")
+    return round(kwota * kurs, 2)
+```
+
+```python
+# test_kursy.py
+from kursy import przelicz
+
+def test_przelicz():
+    assert przelicz(100, 4.25) == 425.0
+```
+
+```text
+$ pytest
+test_kursy.py .                                     [100%]
+1 passed in 0.01s
+```
+
+Bez klasy, bez znacznika nad funkcją, bez specjalnej asercji.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Jak pytest znajduje testy
+
+Liczą się **nazwy**. Nie ma znaczników nad funkcją, takich jak `[Fact]` w C#.
+
+```text
+tests/                       przeszukuje katalogi rekurencyjnie
+  test_kursy.py          ✓   test_*.py
+  kursy_test.py          ✓   *_test.py
+  pomocnicze.py          ✗   inna nazwa pliku
+
+def test_przelicz():     ✓   funkcja test_*
+def sprawdz():           ✗   inna nazwa funkcji
+
+class TestKursy:         ✓   klasa Test*, bez __init__
+    def test_ujemny(self):   ✓   metoda test_*
+```
+
+- `pytest --collect-only -q` pokazuje, co zostało znalezione
+- **pułapka**: klasa z konstruktorem `__init__` jest pomijana, a w C# to właśnie konstruktor przygotowuje test
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `unittest` to xUnit, pytest jest pythoniczny
+
+<div class="pliki">
+<div>
+
+`unittest`, biblioteka standardowa
+
+```py
+class TestKursy(unittest.TestCase):
+    def setUp(self):
+        self.kurs = 4.25
+
+    def test_przelicz(self):
+        self.assertEqual(
+            przelicz(100, self.kurs), 425.0)
+
+    def test_blad(self):
+        with self.assertRaises(ValueError):
+            przelicz(100, -1)
+```
+
+</div>
+<div>
+
+pytest, osobny pakiet
+
+```py
+@pytest.fixture
+def kurs():
+    return 4.25
+
+def test_przelicz(kurs):
+    assert przelicz(100, kurs) == 425.0
+
+def test_blad():
+    with pytest.raises(ValueError):
+        przelicz(100, -1)
+```
+
+</div>
+</div>
+
+- `unittest`: klasy i metody `assertX`, czyli wzorzec xUnit, znany np. z JUnit w Javie i xUnit w C#
+- pytest: funkcje i zwykły `assert`; uruchamia też stare testy `unittest`
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Słownik: z C# na pytest
+
+Kolumna C# jest dla osób znających xUnit, popularną bibliotekę testową w tym języku. Pozostałe wystarczą każdemu.
+
+| Do czego służy | xUnit w C# | pytest |
+|---|---|---|
+| oznaczenie testu | `[Fact]` | funkcja `test_...` |
+| jeden test, wiele danych | `[Theory]`, `[InlineData]` | `@pytest.mark.parametrize` |
+| sprawdzenie wartości | `Assert.Equal(a, b)` | `assert a == b` |
+| oczekiwany wyjątek | `Assert.Throws<T>(...)` | `with pytest.raises(T):` |
+| przygotowanie i sprzątanie | konstruktor, `IDisposable` | fixture z `yield` |
+| zasób wspólny dla klasy | `IClassFixture<T>` | fixture ze `scope="class"` |
+| zasób wspólny dla wielu klas | `ICollectionFixture<T>` | fixture ze `scope="session"` |
+| etykieta testu | `[Trait]` | `@pytest.mark.nazwa` |
+| atrapy zależności | biblioteka Moq | `monkeypatch`, `MagicMock` |
+| uruchomienie testów | `dotnet test` | `pytest` |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Zwykły `assert` z pełną informacją
+
+```python
+# test_awaria.py
+from kursy import przelicz
+
+def test_przelicz():
+    wynik = przelicz(100, 4.25)
+    assert wynik == 425.01
+```
+
+```text
+    def test_przelicz():
+        wynik = przelicz(100, 4.25)
+>       assert wynik == 425.01
+E       assert 425.0 == 425.01
+
+test_awaria.py:5: AssertionError
+```
+
+Nie trzeba wybierać metody typu `assertEqual`: pytest przepisuje `assert` i sam pokazuje wartości.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wyjątki: `pytest.raises`
+
+```python
+# test_wyjatki.py
+import pytest
+from kursy import przelicz
+
+def test_ujemny_kurs():
+    with pytest.raises(ValueError, match="dodatni"):
+        przelicz(100, -1)
+
+def test_szczegoly_wyjatku():
+    with pytest.raises(ValueError) as blad:
+        przelicz(100, 0)
+    assert "kurs" in str(blad.value)
+```
+
+- test nie przejdzie, jeśli wyjątek **nie poleci**
+- `match` to wyrażenie regularne szukane w treści komunikatu
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Liczby: `pytest.approx`
+
+```python
+# test_approx.py
+import pytest
+
+def test_suma():
+    assert 0.1 + 0.2 == pytest.approx(0.3)
+
+def test_kolekcje():
+    assert [0.1 + 0.2, 1.0] == pytest.approx([0.3, 1.0])
+
+def test_wlasna_tolerancja():
+    assert 4.26 == pytest.approx(4.25, abs=0.02)
+```
+
+Domyślna tolerancja to względne `1e-6`. Działa też ze słownikami.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `parametrize`: jeden test, wiele danych
+
+```python
+# test_param.py
+import pytest
+from kursy import przelicz
+
+@pytest.mark.parametrize("kwota, kurs, wynik", [
+    (100, 4.25, 425.0),
+    (0, 4.25, 0.0),
+    pytest.param(1, 0.333, 0.33, id="zaokraglenie"),
+])
+def test_przelicz(kwota, kurs, wynik):
+    assert przelicz(kwota, kurs) == wynik
+```
+
+```text
+test_param.py::test_przelicz[100-4.25-425.0] PASSED
+test_param.py::test_przelicz[0-4.25-0.0] PASSED
+test_param.py::test_przelicz[zaokraglenie] PASSED
+```
+
+W xUnit w C# służą do tego znaczniki `[Theory]` i `[InlineData]`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Fixture: zależność wstrzykiwana po nazwie
+
+```python
+# test_fixture.py
+import pytest
+
+@pytest.fixture
+def kursy():
+    return {"EUR": 4.25, "USD": 3.91}
+
+def test_liczba_walut(kursy):
+    assert len(kursy) == 2
+
+def test_zmiana_nie_przecieka(kursy):
+    kursy["CHF"] = 4.78
+    assert len(kursy) == 3
+```
+
+- pytest widzi parametr `kursy` i uruchamia fixture o tej nazwie
+- domyślnie **każdy test dostaje świeżą** wartość
+- wspólne fixtures trafiają do `conftest.py` i działają **bez importu**
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `yield`: przygotowanie i sprzątanie
+
+```python
+# test_baza.py
+import sqlite3
+import pytest
+
+@pytest.fixture
+def baza():
+    polaczenie = sqlite3.connect(":memory:")       # przygotowanie
+    polaczenie.execute("CREATE TABLE kursy (waluta TEXT, kurs REAL)")
+    yield polaczenie                               # tu działa test
+    polaczenie.close()                             # sprzątanie
+
+def test_zapis(baza):
+    baza.execute("INSERT INTO kursy VALUES ('EUR', 4.25)")
+    wynik = baza.execute("SELECT COUNT(*) FROM kursy").fetchone()
+    assert wynik == (1,)
+```
+
+Kod po `yield` wykona się także wtedy, gdy test się nie powiedzie.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `scope`: jak często tworzyć zasób
+
+| `scope` | Tworzona | Odpowiednik w xUnit (C#) |
+|---|---|---|
+| `function` (domyślny) | dla każdego testu | konstruktor klasy testowej |
+| `class` | raz na klasę | `IClassFixture<T>` |
+| `module` | raz na plik | brak |
+| `package` | raz na pakiet | brak |
+| `session` | raz na całe uruchomienie | `ICollectionFixture<T>` |
+
+Szerszy `scope` przyspiesza testy, ale **współdzieli stan**, więc testy mogą zacząć od siebie zależeć.
+
+Ostatnia kolumna jest dla znających C#: `IClassFixture` i `ICollectionFixture` to interfejsy, którymi xUnit oznacza wspólny zasób.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `scope` w działaniu
+
+```python
+# test_scope.py
+import pytest
+
+otwarcia = []
+
+@pytest.fixture(scope="module")
+def zasob():
+    otwarcia.append(1)
+    return "połączenie"
+
+def test_a(zasob):
+    assert len(otwarcia) == 1
+
+def test_b(zasob):
+    assert len(otwarcia) == 1
+```
+
+`pytest --setup-show` pokazuje, kiedy fixture jest tworzona i sprzątana.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Najpopularniejsze wbudowane fixtures
+
+| Fixture | Do czego służy |
+|---|---|
+| `tmp_path` | tymczasowy katalog jako `pathlib.Path` |
+| `capsys` | przechwycone `stdout` i `stderr` |
+| `caplog` | przechwycone logi |
+| `monkeypatch` | tymczasowa podmiana obiektów i zmiennych środowiskowych |
+| `request` | informacje o bieżącym teście |
+
+Niczego nie importujemy, wystarczy nazwa parametru. Pełna lista: `pytest --fixtures`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wbudowane fixtures w użyciu
+
+```python
+# test_wbudowane.py
+import logging
+
+def test_plik(tmp_path):
+    plik = tmp_path / "kursy.txt"
+    plik.write_text("4.25")
+    assert plik.read_text() == "4.25"
+
+def test_wydruk(capsys):
+    print("gotowe")
+    assert capsys.readouterr().out == "gotowe\n"
+
+def test_log(caplog):
+    logging.getLogger().warning("uwaga")
+    assert "uwaga" in caplog.text
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Uruchamianie: popularne przełączniki
+
+| Przełącznik | Co robi |
+|---|---|
+| `pytest tests/test_kursy.py::test_przelicz` | jeden konkretny test |
+| `-v`, `-q` | więcej lub mniej szczegółów |
+| `-k "przelicz and not blad"` | wybór po nazwie |
+| `-m "not wolny"` | wybór po znaczniku |
+| `-x`, `--maxfail=2` | stop po pierwszym lub po 2 błędach |
+| `--lf`, `--ff` | tylko ostatnio nieudane albo najpierw one |
+| `-s` | pokazuje `print` podczas testów |
+| `--pdb` | debugger w miejscu błędu |
+| `--durations=5` | 5 najwolniejszych testów |
+| `--collect-only -q` | lista testów bez uruchamiania |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Konfiguracja w `pyproject.toml`
+
+```toml
+[tool.pytest]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = ["-ra", "--strict-markers"]
+markers = ["wolny: testy trwające dłużej"]
+```
+
+```py
+@pytest.mark.wolny
+def test_caly_rok_kursow():
+    ...
+```
+
+- `pythonpath`: testy widzą kod w `src/` bez instalacji pakietu
+- `--strict-markers`: literówka w nazwie znacznika to błąd
+- `-ra`: podsumowanie wszystkich testów, które nie przeszły
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Problem: test nie powinien iść do sieci
+
+```python
+# nbp.py
+import httpx
+
+URL = "https://api.nbp.pl/api/exchangerates/rates/a/{}/?format=json"
+
+def kurs(waluta):
+    odpowiedz = httpx.get(URL.format(waluta))
+    odpowiedz.raise_for_status()
+    return odpowiedz.json()["rates"][0]["mid"]
+
+def kurs_przez_klienta(klient, waluta):
+    return klient.get(URL.format(waluta)).json()["rates"][0]["mid"]
+```
+
+W C# zwykle wydziela się interfejs i podstawia w teście jego atrapę, np. biblioteką Moq. W Pythonie funkcję można podmienić w trakcie testu.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `monkeypatch`: podmiana na czas testu
+
+```python
+# test_monkeypatch.py
+import httpx
+import nbp
+
+class FalszywaOdpowiedz:
+    def raise_for_status(self):
+        pass
+
+    def json(self):
+        return {"rates": [{"mid": 4.25}]}
+
+def test_kurs(monkeypatch):
+    monkeypatch.setattr(httpx, "get", lambda url: FalszywaOdpowiedz())
+    assert nbp.kurs("eur") == 4.25
+```
+
+- po teście wszystko **wraca automatycznie**
+- zmienne środowiskowe: `monkeypatch.setenv(nazwa, wartość)`
+- przy `from httpx import get` podmienilibyśmy `nbp.get`
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `MagicMock`: atrapa z pamięcią
+
+```python
+# test_mock.py
+from unittest.mock import MagicMock
+import httpx, pytest
+import nbp
+
+def test_kurs():
+    klient = MagicMock(spec=httpx.Client)
+    dane = {"rates": [{"mid": 4.25}]}
+    klient.get.return_value.json.return_value = dane
+    assert nbp.kurs_przez_klienta(klient, "eur") == 4.25
+    klient.get.assert_called_once_with(nbp.URL.format("eur"))
+
+def test_brak_sieci():
+    klient = MagicMock(spec=httpx.Client)
+    klient.get.side_effect = httpx.ConnectError("brak sieci")
+    with pytest.raises(httpx.ConnectError):
+        nbp.kurs_przez_klienta(klient, "eur")
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `MagicMock` a Moq, i kiedy czego używać
+
+Moq to popularna biblioteka atrap w C#.
+
+| Do czego służy | Moq (C#) | `MagicMock` |
+|---|---|---|
+| ustawienie wyniku | `Setup(...).Returns(x)` | `.return_value = x` |
+| ustawienie wyjątku | `Setup(...).Throws(e)` | `.side_effect = e` |
+| sprawdzenie wywołania | `Verify(..., Times.Once)` | `.assert_called_once_with(...)` |
+
+**Pułapka:** `MagicMock()` przyjmie każdą nazwę, także literówkę. `spec=` ogranicza atrapę do prawdziwego interfejsu.
+
+| Potrzebuję | Narzędzie |
+|---|---|
+| prostej podmiany funkcji lub zmiennej środowiskowej | `monkeypatch` |
+| sprawdzenia, jak coś zostało wywołane | `MagicMock` |
+| tego samego zasobu w wielu testach | fixture |
+</textarea></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({ hash: true, slideNumber: 'c/t', plugins: [RevealMarkdown, RevealHighlight, RevealNotes] });
+</script>
+</body>
+</html>

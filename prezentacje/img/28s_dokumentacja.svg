@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" font-family="Segoe UI, system-ui, sans-serif">
+  <!-- skąd bierze się dokumentacja i dokąd trafia -->
+  <defs><marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#306998"/></marker></defs>
+  <rect x="20" y="20" width="260" height="95" rx="8" fill="#fff8d6" stroke="#c9a400" stroke-width="2.5"/>
+  <text x="150.0" y="50" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">zensical.toml</text>
+  <text x="150.0" y="78" font-size="17" fill="#68717f" text-anchor="middle">nazwa strony, wtyczki</text>
+  <rect x="20" y="135" width="260" height="95" rx="8" fill="#fff8d6" stroke="#c9a400" stroke-width="2.5"/>
+  <text x="150.0" y="165" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">docs/index.md</text>
+  <text x="150.0" y="193" font-size="17" fill="#68717f" text-anchor="middle">tekst i znaczniki :::</text>
+  <rect x="20" y="250" width="260" height="95" rx="8" fill="#fff8d6" stroke="#c9a400" stroke-width="2.5"/>
+  <text x="150.0" y="280" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">src/kursy_nbp/*.py</text>
+  <text x="150.0" y="308" font-size="17" fill="#68717f" text-anchor="middle">docstringi i adnotacje</text>
+  <rect x="330" y="20" width="270" height="95" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="465.0" y="50" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">zensical build</text>
+  <text x="465.0" y="78" font-size="17" fill="#68717f" text-anchor="middle">czyta konfigurację i pliki</text>
+  <rect x="330" y="135" width="270" height="95" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="465.0" y="165" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">Markdown na HTML</text>
+  <text x="465.0" y="193" font-size="17" fill="#68717f" text-anchor="middle">znacznik ::: oddaje</text>
+  <text x="465.0" y="218" font-size="17" fill="#68717f" text-anchor="middle">do mkdocstrings</text>
+  <rect x="330" y="250" width="270" height="95" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="465.0" y="280" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">mkdocstrings + griffe</text>
+  <text x="465.0" y="308" font-size="17" fill="#68717f" text-anchor="middle">griffe analizuje kod</text>
+  <path d="M283 67 L327 67" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M283 182 L327 182" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M283 297 L327 297" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M465 118 L465 132" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M465 248 L465 233" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <rect x="650" y="77" width="230" height="120" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="765.0" y="107" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">site/</text>
+  <text x="765.0" y="135" font-size="17" fill="#68717f" text-anchor="middle">index.html, assets/,</text>
+  <text x="765.0" y="160" font-size="17" fill="#68717f" text-anchor="middle">search.json, 404.html</text>
+  <path d="M603 182 L647 150" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <rect x="650" y="225" width="230" height="120" rx="8" fill="#fff8d6" stroke="#c9a400" stroke-width="2.5"/>
+  <text x="765.0" y="255" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle">przeglądarka</text>
+  <text x="765.0" y="283" font-size="17" fill="#68717f" text-anchor="middle">serve: localhost:8000</text>
+  <text x="765.0" y="308" font-size="17" fill="#68717f" text-anchor="middle">albo hosting statyczny</text>
+  <path d="M765 200 L765 222" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <text x="450" y="395" font-size="19" fill="#1c2330" text-anchor="middle">Wynikiem są zwykłe pliki HTML: można je obejrzeć, skopiować i opublikować gdziekolwiek.</text>
+</svg>

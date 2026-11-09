@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PYTH02 · 28s. Od skryptów do projektu — narzędzia</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/white.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/github.css">
+<style>
+  :root { --r-main-font-size: 30px; --r-heading-color: #306998; --r-link-color: #306998; }
+  .reveal h1, .reveal h2 { font-size: 1.6em; text-transform: none; }
+  .reveal section.tytulowy img { float: right; max-height: 42vh; margin: 0 0 0 1.5em; }
+  .reveal img { max-height: 38vh; border: none; box-shadow: none; }
+  .reveal img[alt^="Diagram"] { display: block; width: 100%; max-height: 440px; object-fit: contain; margin: 0.2em auto; }
+  .reveal pre { width: 100%; font-size: 0.8em; box-shadow: none; }
+  .reveal code { font-family: ui-monospace, Consolas, monospace; }
+  .reveal pre code { white-space: pre-wrap !important; overflow-wrap: anywhere; max-height: 560px; }
+  .reveal ul, .reveal ol { display: block; }
+  .reveal table { font-size: 0.62em; margin: 0; }
+  .reveal table th, .reveal table td { padding: 0.25em 0.8em; }
+  .reveal table tr.fragment:not(.visible) td { border-color: transparent; }
+  .reveal .slides { text-align: left; }
+  .reveal .slides section > h2 { border-bottom: 3px solid #ffd43b; padding-bottom: 0.2em; }
+  .reveal section.zagadka { font-size: 0.78em; }
+  .reveal section.zagadka h2 { font-size: 1.7em; margin-bottom: 0.2em; }
+  .reveal section.zagadka pre { margin: 0.3em 0; font-size: 1.05em; }
+  .reveal section.zagadka ul { list-style: none; margin-left: 0; }
+  .reveal section.zagadka li { margin: 0.15em 0; }
+  .reveal .pliki { display: grid; grid-template-columns: 1fr 1fr; gap: 1em; }
+  .reveal .pliki p { margin: 0; font-size: 0.8em; }
+  .reveal .pliki pre { font-size: 0.62em; }
+  .reveal section.zagadka-pliki pre { font-size: 0.85em; }
+  .reveal section.zagadka-pliki li { font-size: 0.85em; }
+  .reveal .zagadka-meta { color: #68717f; font-size: 0.75em; margin: 0 0 0.4em; }
+  .reveal .odpowiedz { background: #e8f5ec; border-left: 6px solid #1a7f37; padding: 0.3em 0.6em; }
+  .stopka { position: fixed; bottom: 12px; left: 20px; font: 14px system-ui, sans-serif; color: #68717f; z-index: 10; }
+</style>
+</head>
+<body>
+<div class="stopka"><strong>PYTH02</strong> · Zaawansowane programowanie w języku Python · Michał Grzemowski</div>
+<div class="reveal"><div class="slides">
+<section data-markdown class="tytulowy"><textarea data-template>
+## Od skryptów do projektu
+
+- **linting**: `ruff` i `mypy`
+- **zależności, wersje i pakiet**: `uv`, a także co było wcześniej
+- **polecenie w terminalu**: jak działa `kursy-nbp`
+- **dokumentacja**: jak, gdzie i z czego powstaje
+- **ręczna konfiguracja** i **struktura katalogów**
+- **CI**: spięcie wszystkiego na GitHubie
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Nasz zestaw
+
+| Potrzeba | Narzędzie | Co zastępuje |
+|---|---|---|
+| styl i typowe błędy | `ruff` | `flake8`, `isort`, `black` |
+| zgodność typów | `mypy` | ręczne pilnowanie typów |
+| środowisko, zależności, pakiet | `uv` | `venv`, `pip`, `pip-tools`, `pyenv`, `twine` |
+| polecenie w terminalu | Typer | ręczny `argparse` |
+| testy | `pytest` | `unittest` |
+| dokumentacja | Zensical | MkDocs z motywem Material |
+| automatyczne sprawdzanie | GitHub Actions | „u mnie działa” |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ruff`: dwa niezależne polecenia
+
+| Polecenie | Co robi | Czy zmienia pliki |
+|---|---|---|
+| `ruff format` | ustawia **układ** kodu: odstępy, cudzysłowy, łamanie linii | tak |
+| `ruff check` | szuka **problemów**: nieużywane importy, pułapki, styl | tylko z `--fix` |
+
+Oba uruchamiamy przez `uv`, czyli wersją zapisaną w projekcie:
+
+```text
+uv run ruff format
+uv run ruff check
+```
+
+Na kodzie z naszych zajęć, bez konfiguracji: **55 problemów** i **48 z 50 plików** do sformatowania.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ruff format`: opcje
+
+| Polecenie | Co robi | Kiedy używać |
+|---|---|---|
+| `ruff format` | poprawia wszystkie pliki w katalogu | lokalnie, przed commitem |
+| `ruff format plik.py` | poprawia jeden plik lub katalog | przy większych porządkach |
+| `ruff format --check` | niczego nie zmienia; błąd, gdy coś wymaga zmian | w CI |
+| `ruff format --diff` | pokazuje zmiany bez zapisywania | gdy chcemy je najpierw obejrzeć |
+
+```text
+$ uv run ruff format --diff r.py
+-x = [1,2]
++x = [1, 2]
+1 file would be reformatted
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ruff check`: jak czytać wynik i opcje
+
+```text
+r.py:1:8: F401 [*] `os` imported but unused
+```
+
+`r.py:1:8` to plik, linia i kolumna, `F401` to kod reguły, a `[*]` oznacza możliwość automatycznej poprawki.
+
+| Opcja | Co robi |
+|---|---|
+| `--fix` | stosuje bezpieczne poprawki |
+| `--unsafe-fixes` | razem z `--fix` stosuje też poprawki, które mogą zmienić działanie |
+| `--diff` | pokazuje, co poprawiłby `--fix`, bez zapisywania |
+| `--statistics` | zlicza problemy według reguł; dobre na pierwszy przegląd |
+| `--output-format concise` | jedna linia na problem |
+| `--select F` | na to uruchomienie sprawdza tylko wskazaną grupę reguł |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ruff`: konfiguracja w `pyproject.toml`
+
+```toml
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+```
+
+| Opcja | Znaczenie |
+|---|---|
+| `line-length` | największa długość linii, wspólna dla lintera i formatera |
+| `select` | grupy reguł, które chcemy włączyć; zastępuje domyślny zestaw |
+| `convention` | format docstringów, tu Google: `Args`, `Returns`, `Yields` |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ruff`: grupy reguł i wyjątki
+
+| Grupa | Co sprawdza | Przykład |
+|---|---|---|
+| `E` | styl PEP 8 | za długa linia |
+| `F` | prawdziwe błędy | nieużywany import, niezdefiniowana nazwa |
+| `I` | kolejność importów | stdlib przed pakietami zewnętrznymi |
+| `UP` | składnia przestarzała dla naszej wersji Pythona | `typing.List` zamiast `list` |
+| `B` | typowe pułapki | zmienna z pętli w domknięciu |
+| `D` | docstringi | brak opisu funkcji |
+
+```toml
+[tool.ruff.lint.per-file-ignores]
+# w plikach z tego katalogu wyłączamy te grupy
+"zajecia/**" = ["E", "I", "UP", "B", "D"]
+```
+
+Pojedyncza linia: `import os  # noqa: F401`. Komentarz wyłącza tę regułę tylko tam.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `mypy`: sprawdzanie typów bez uruchamiania
+
+```py
+def spread(ask: float, bid: float) -> float:
+    return str(ask - bid)
+
+wynik: int = spread("4.0", 3.9)
+```
+
+```text
+m.py:2: error: Incompatible return value type (got "str", expected "float")  [return-value]
+m.py:4: error: Incompatible types in assignment (expression has type "float", variable has type "int")  [assignment]
+m.py:4: error: Argument 1 to "spread" has incompatible type "str"; expected "float"  [arg-type]
+```
+
+Python ignoruje adnotacje w czasie działania, więc takie błędy łapie dopiero `mypy`, bez uruchamiania kodu. `ruff` tego nie sprawdza.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `mypy`: konfiguracja i opcje
+
+```toml
+[tool.mypy]
+strict = true
+files = ["src"]
+```
+
+| Element | Znaczenie |
+|---|---|
+| `files` | co sprawdzać, gdy uruchamiamy samo `uv run mypy` |
+| `strict` | zestaw surowych reguł, m.in. poniższe |
+| `--disallow-untyped-defs` | każda funkcja musi mieć adnotacje |
+| `--disallow-any-generics` | `list[int]` zamiast samego `list` |
+| `--warn-return-any` | ostrzega, gdy funkcja zwraca `Any` zamiast obiecanego typu |
+| `# type: ignore[arg-type]` | wyłącza wskazany błąd w jednej linii |
+| pakiet `types-requests` | typy dla biblioteki, która sama ich nie ma |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Jak to wyglądało wcześniej
+
+| Zadanie | Osobne narzędzie lub plik |
+|---|---|
+| wersja Pythona | `pyenv` albo instalator |
+| środowisko | `python -m venv`, a potem aktywacja |
+| instalacja | `pip install` |
+| lista zależności | `requirements.txt`, często z `pip freeze` |
+| przypięcie wersji | `pip-tools` albo ręczne poprawki |
+| metadane pakietu | `setup.py`, `setup.cfg`, `MANIFEST.in` |
+| budowa i publikacja | `python -m build`, `twine upload` |
+
+Każdy projekt robił to inaczej, a `pip freeze` mieszał zależności własne z pośrednimi.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `uv`: jedno narzędzie zamiast siedmiu
+
+| Dawniej | Dziś |
+|---|---|
+| `pyenv install 3.15` | `uv python install 3.15` |
+| `python -m venv .venv`, aktywacja | automatycznie przy `uv run` |
+| `pip install requests` i zapis w pliku | `uv add requests` |
+| `pip install -r requirements.txt` | `uv sync` |
+| `python skrypt.py` | `uv run skrypt.py` |
+| `python -m build` | `uv build` |
+| `twine upload dist/*` | `uv publish` |
+
+Aktualizacja samego narzędzia: `uv self update`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `uv init`: nowy projekt
+
+```text
+uv init --package kursy-nbp
+```
+
+| Opcja | Co powstaje | Kiedy |
+|---|---|---|
+| bez opcji lub `--app` | prosta aplikacja, bez budowania pakietu | skrypty, usługi |
+| `--package` | aplikacja jako pakiet, układ `src/`, polecenie w terminalu | **nasz przypadek** |
+| `--lib` | biblioteka do użycia w innym kodzie, układ `src/` | pakiet bez polecenia |
+| `--bare` | tylko `pyproject.toml` | istniejący kod |
+
+Nazwa `kursy-nbp` ma myślnik, a moduł `kursy_nbp` podkreślenie, bo w `import` nie wolno użyć myślnika.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Co tworzy `uv init --package`
+
+```text
+kursy-nbp/
+  .gitignore                 pliki pomijane przez gita
+  .python-version            wersja Pythona dla tego katalogu
+  README.md                  opis projektu
+  pyproject.toml             konfiguracja projektu
+  src/kursy_nbp/__init__.py  początek pakietu
+```
+
+Pierwsze `uv add`, `uv run` albo `uv sync` dokłada jeszcze:
+
+```text
+  .venv/                     środowisko; nie trafia do gita
+  uv.lock                    dokładne wersje; trafia do gita
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `uv add` i `uv remove`: zależności
+
+| Polecenie | Co robi | Gdzie zapisuje |
+|---|---|---|
+| `uv add requests` | dodaje zależność pakietu | `dependencies` |
+| `uv add "requests>=2.34,<3"` | jak wyżej, z zakresem wersji | `dependencies` |
+| `uv add --dev pytest ruff mypy` | narzędzia deweloperskie | grupa `dev` |
+| `uv add --group docs zensical` | zależność grupy o własnej nazwie | grupa `docs` |
+| `uv remove requests` | usuwa zależność | usuwa wpis |
+| `uv tree --depth 1` | pokazuje drzewo zależności | nic |
+
+Każde `add` i `remove` aktualizuje też `pyproject.toml`, `uv.lock` i `.venv`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `pyproject.toml`: sekcja `[project]`
+
+```toml
+[project]
+name = "kursy-nbp"
+version = "0.1.0"
+description = "Notowania walut z API NBP"
+readme = "README.md"
+authors = [{ name = "Michał Grzemowski" }]
+requires-python = ">=3.15"
+dependencies = ["requests>=2.34.2", "typer>=0.27.3"]
+```
+
+| Pole | Znaczenie |
+|---|---|
+| `name`, `version` | nazwa i wersja pakietu, np. przy instalacji |
+| `description`, `readme`, `authors` | opis widoczny m.in. na PyPI |
+| `requires-python` | na jakich wersjach Pythona działa pakiet |
+| `dependencies` | czego pakiet potrzebuje do działania |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Zakresy wersji i grupy zależności
+
+| Zapis | Znaczenie |
+|---|---|
+| `requests>=2.34.2` | ta wersja albo nowsza |
+| `requests>=2.34,<3` | nowsza, ale bez kolejnej wersji głównej |
+| `requests~=2.34.0` | tylko poprawki: 2.34.x |
+| `zensical==0.1.0` | dokładnie ta wersja |
+
+```toml
+[dependency-groups]
+dev = ["mypy>=2.4.1", "pytest>=9.2.0", "ruff>=0.17.4"]
+docs = ["mkdocstrings-python>=2.0.10", "zensical==0.1.0"]
+```
+
+Grupy służą tylko do pracy nad projektem i **nie trafiają do użytkowników pakietu**. `dev` instaluje się domyślnie, a pozostałe na żądanie.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `uv.lock`, `uv lock`, `uv sync`, `uv run`
+
+`pyproject.toml` mówi, **czego potrzebujemy**. `uv.lock` mówi, **co dokładnie zainstalowano**, także zależności pośrednie.
+
+| Polecenie | Co robi |
+|---|---|
+| `uv lock` | wylicza wersje i zapisuje `uv.lock` |
+| `uv lock --upgrade` | podnosi wszystkie pakiety do najnowszych dozwolonych |
+| `uv lock -P requests` | podnosi tylko jeden pakiet |
+| `uv sync` | ustawia `.venv` zgodnie z `uv.lock` |
+| `uv sync --locked` | jak wyżej, ale **błąd**, gdy lockfile jest nieaktualny; do CI |
+| `uv sync --group docs`, `--all-groups` | dodatkowo wskazana grupa albo wszystkie |
+| `uv run polecenie` | synchronizuje i uruchamia w `.venv` |
+| `uv run --group docs polecenie` | jak wyżej, razem z grupą `docs` |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wersje Pythona
+
+| Polecenie lub plik | Co robi |
+|---|---|
+| `uv python list` | pokazuje dostępne wersje |
+| `uv python install 3.15` | instaluje wskazaną wersję |
+| `uv python pin 3.15` | zapisuje wersję w `.python-version` |
+| `.python-version` | której wersji używać do pracy w tym katalogu |
+| `requires-python` | jakie wersje pakiet w ogóle obsługuje |
+
+Jeśli wskazanej wersji nie ma, `uv` zwykle sam ją pobierze, także w CI. W naszym repo nie ma `.python-version`, więc decyduje `requires-python = ">=3.15"`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wersja projektu i budowa pakietu
+
+| Polecenie | Efekt przy wersji 1.2.3 |
+|---|---|
+| `uv version` | wypisuje wersję |
+| `uv version --bump patch` | 1.2.4: poprawka błędu |
+| `uv version --bump minor` | 1.3.0: nowa funkcja, zgodna wstecz |
+| `uv version --bump major` | 2.0.0: zmiana niezgodna wstecz |
+| `uv version --bump minor --dry-run` | pokazuje wynik, niczego nie zapisuje |
+
+```text
+$ uv build
+dist/kursy_nbp-0.1.0.tar.gz               sdist: kod źródłowy
+dist/kursy_nbp-0.1.0-py3-none-any.whl     wheel: gotowy do instalacji
+```
+
+`uv build --wheel` albo `--sdist` buduje tylko jeden format. Publikacja na PyPI to `uv publish`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `[build-system]` i Poetry
+
+```toml
+[build-system]
+requires = ["uv_build>=0.13.7,<0.14"]
+build-backend = "uv_build"
+```
+
+`requires` to narzędzia potrzebne do budowy, a `build-backend` wskazuje, co buduje pakiet. `uv_build` obsługuje tylko czysty Python; przy rozszerzeniach kompilowanych trzeba użyć innego backendu.
+
+**Poetry** to dojrzałe i rozwijane narzędzie: robi zależności, lockfile (`poetry.lock`), budowę i publikację, a wersja 2 używa standardowego `[project]`. Spotkacie je w wielu projektach. Polecenia są podobne: `poetry add`, `poetry install`, `poetry run`, `poetry build`. Nowy projekt zaczęlibyśmy od `uv`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## CLI: od polecenia do wyniku
+
+![Diagram: uv run uruchamia kursy-nbp.exe, ten woła kursy_nbp.cli:app, Typer wywołuje pokaz, a generatory dają wynik](img/28s_cli.svg)
+
+```text
+$ uv run kursy-nbp usd --limit 2
+2026-11-05 usd bid=3.872 ask=3.9502 spread=0.0782
+2026-11-04 usd bid=3.9034 ask=3.9822 spread=0.0788
+```
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Skąd się bierze polecenie `kursy-nbp`
+
+```toml
+[project.scripts]
+kursy-nbp = "kursy_nbp.cli:app"
+```
+
+Zapis oznacza: polecenie `kursy-nbp` importuje moduł `kursy_nbp.cli` i wywołuje obiekt `app`.
+
+| Krok | Co się dzieje |
+|---|---|
+| `uv sync` instaluje nasz pakiet do `.venv` | w trybie edytowalnym, wskazując na `src/` |
+| instalator czyta `[project.scripts]` | i tworzy `.venv/Scripts/kursy-nbp.exe` |
+| zmieniamy kod w `src/` | działa od razu, bez ponownej instalacji |
+| zmieniamy `[project.scripts]` | potrzebne ponowne `uv sync`; robi to `uv run` |
+
+Na Linuksie i macOS polecenie ląduje w `.venv/bin/kursy-nbp`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `cli.py`: aplikacja
+
+```py
+import itertools
+from typing import Annotated
+
+import typer
+
+from kursy_nbp.notowania import (
+    filtruj,
+    generuj_spread,
+    pobierz_notowania,
+)
+
+app = typer.Typer(add_completion=False, help="Notowania walut.")
+```
+
+- `app` to obiekt, który wskazuje `[project.scripts]`
+- `add_completion=False`: bez opcji podpowiedzi powłoki
+- `help` to opis całej aplikacji
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `cli.py`: polecenie
+
+```py
+@app.command()
+def pokaz(
+    waluta: Annotated[str, typer.Argument(help="Kod waluty.")],
+    limit: Annotated[int, typer.Option(help="Ile notowań.")] = 5,
+    min_spread: Annotated[
+        float, typer.Option(help="Najmniejszy spread.")
+    ] = 0.0,
+) -> None:
+    """Wypisuje najnowsze notowania waluty."""
+    surowe = pobierz_notowania(waluta)
+    strumien = filtruj(generuj_spread(surowe), "spread", min_spread)
+    for notowanie in itertools.islice(strumien, limit):
+        typer.echo(f"{notowanie['effectiveDate']} ...")
+```
+
+`Annotated[int, typer.Option(...)]` to zwykła adnotacja `int` z dodatkową informacją dla Typera.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Typer: funkcja staje się poleceniem
+
+| W kodzie Pythona | W terminalu | Dlaczego |
+|---|---|---|
+| `app = typer.Typer(...)` | polecenie | obiekt, który można wywołać |
+| `@app.command()` | rejestruje `pokaz` | funkcja staje się poleceniem |
+| `waluta: str` bez domyślnej | `kursy-nbp usd` | brak wartości domyślnej to wymagany **argument** |
+| `limit: int = 5` | `--limit 2` | wartość domyślna to **opcja** |
+| `min_spread: float = 0.0` | `--min-spread 0.05` | `_` w nazwie zamienia się na `-` |
+| adnotacja `int`, `float` | `"2"` zamienia się na `2` | Typer konwertuje i sprawdza typy |
+| `help="..."` | opis w `--help` | z `typer.Argument` i `typer.Option` |
+| docstring funkcji | opis polecenia | też w `--help` |
+
+Czyli te same typy, które sprawdza `mypy`, sterują tutaj linią poleceń.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Co Typer daje za darmo
+
+```text
+$ uv run kursy-nbp --help
+Usage: kursy-nbp [OPTIONS] {waluta}
+Wypisuje najnowsze notowania waluty ...
+  * waluta        <str>    Kod waluty, np. usd. [required]
+    --limit       <int>    Ile notowań wypisać. [default: 5]
+    --min-spread  <float>  Najmniejszy spread. [default: 0.0]
+    --help                 Show this message and exit.
+
+$ uv run kursy-nbp usd --limit abc
+Invalid value for '--limit': 'abc' is not a valid int.
+
+$ uv run kursy-nbp
+Missing argument 'waluta'.
+```
+
+Przy błędnych argumentach polecenie kończy się **kodem wyjścia 2**, a po sukcesie kodem 0.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Co dzieje się po uruchomieniu
+
+```py
+surowe = pobierz_notowania(waluta)
+strumien = filtruj(generuj_spread(surowe), "spread", min_spread)
+for notowanie in itertools.islice(strumien, limit):
+    ...
+```
+
+| Krok | Co się dzieje |
+|---|---|
+| dwie pierwsze linie | **nic nie jest pobierane**: powstają tylko generatory |
+| pierwsza iteracja pętli | pierwsze żądanie do NBP, po dane z ostatniego roku |
+| `islice` po `limit` notowaniach | pętla się kończy, kolejne lata nie są pobierane |
+
+Czyli dla `--limit 2` idzie **jedno żądanie** do NBP, a nie cała historia.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Jak testować polecenie
+
+```py
+from typer.testing import CliRunner
+from kursy_nbp import cli
+
+def test_limit(monkeypatch):
+    w = {"bid": 3.9, "ask": 4.0, "code": "usd", "effectiveDate": "x"}
+    dane = [dict(w) for _ in range(5)]
+    monkeypatch.setattr(
+        cli, "pobierz_notowania", lambda waluta: iter(dane)
+    )
+
+    wynik = CliRunner().invoke(cli.app, ["usd", "--limit", "2"])
+
+    assert wynik.exit_code == 0
+    assert len(wynik.output.splitlines()) == 2
+```
+
+`CliRunner` uruchamia polecenie w teście, bez terminala i sieci.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Dokumentacja: co wybrać i dlaczego
+
+| Narzędzie | Stan | Ocena |
+|---|---|---|
+| `pdoc3` | działa, zero konfiguracji | dobry pierwszy krok, tylko strony API |
+| Sphinx | dojrzały | duże możliwości, sporo konfiguracji i rST |
+| MkDocs + Material | Material w trybie utrzymania do maja 2027 | nie zaczynamy na tym nowego projektu |
+| **Zensical** | następca Materiala, wersja 0.1 z listopada 2026 | **nasz wybór** |
+
+**Dlaczego Zensical:** Markdown, gotowy wygląd z wyszukiwarką, jedno polecenie i `mkdocstrings` do opisów z docstringów.
+
+**Ryzyko:** to bardzo młode wydanie, więc przypinamy dokładną wersję, a planem awaryjnym jest `pdoc3`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Jak powstaje dokumentacja
+
+![Diagram: zensical.toml, docs/index.md i docstringi z src trafiają do zensical build, który przez mkdocstrings i griffe tworzy katalog site](img/28s_dokumentacja.svg)
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wejście 1: `zensical.toml`
+
+```toml
+[project]
+site_name = "kursy-nbp"
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["src"]
+```
+
+| Element | Znaczenie |
+|---|---|
+| `site_name` | nazwa w nagłówku i tytule strony |
+| `docs_dir` | katalog ze źródłami; bez tego wpisu `docs/` |
+| `nav` | ręczne menu; bez niego menu powstaje z plików |
+| `[project.plugins.mkdocstrings...]` | włącza generowanie opisów z kodu Pythona |
+| `paths = ["src"]` | gdzie szukać modułów, np. `kursy_nbp` |
+
+Potrzebne pakiety: `uv add --group docs zensical==0.1.0 mkdocstrings-python`.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wejście 2: `docs/index.md`
+
+```text
+# kursy-nbp
+
+Pobieranie i strumieniowe przetwarzanie notowań walut z API NBP.
+
+## Notowania
+
+::: kursy_nbp.notowania
+```
+
+- zwykły Markdown piszemy **ręcznie**: wstęp, przykłady, wyjaśnienia
+- linia `::: kursy_nbp.notowania` wstawia opis **całego modułu** wygenerowany z kodu
+- moduł bez takiej linii nie pojawi się na stronie: u nas `cli.py` pominęliśmy celowo
+- każdy plik `.md` w `docs/` to osobna strona
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wejście 3: kod, czyli docstringi i adnotacje
+
+```py
+def filtruj(
+    notowania: Iterable[Notowanie], pole: str, min_wartosc: float
+) -> Iterator[Notowanie]:
+    """Przepuszcza notowania z wystarczająco dużą wartością pola.
+
+    Args:
+        notowania: Strumień notowań.
+        pole: Nazwa sprawdzanego pola.
+        min_wartosc: Najmniejsza dopuszczalna wartość bezwzględna.
+
+    Yields:
+        Notowania spełniające warunek.
+    """
+```
+
+Tekst docstringa piszemy sami, a typy czytane są z adnotacji, więc nie powtarzamy ich w opisie.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Z kodu na stronę
+
+| W kodzie | Na stronie |
+|---|---|
+| docstring modułu | opis pod nagłówkiem modułu |
+| pierwsza linia docstringa | opis funkcji |
+| `Args:` | tabela **Parameters** z nazwą i opisem |
+| adnotacje `str`, `float` | kolumna **Type** |
+| brak wartości domyślnej | kolumna **Default**: `required` |
+| `Returns:`, `Yields:`, `Raises:` | osobne tabele o tych nazwach |
+| cały kod funkcji | rozwijane **Source code** |
+| funkcje i klasy modułu | wpisy po prawej, alfabetycznie |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wynik: tak wygląda strona
+
+![Diagram: wygenerowana strona kursy-nbp z opisem funkcji filtruj i tabelą parametrów](img/28s_strona_dokumentacji.png)
+
+Tekst z `docs/index.md` i opisy z kodu. Pełna strona ma też menu, spis treści i wyszukiwarkę.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Wynik: polecenia i katalog `site/`
+
+| Polecenie | Co robi |
+|---|---|
+| `uv run --group docs zensical serve` | buduje i pokazuje stronę na `localhost:8000`, także po zmianach |
+| `zensical serve --open` | dodatkowo otwiera przeglądarkę |
+| `zensical serve --dev-addr localhost:9000` | inny adres lub port |
+| `uv run --group docs zensical build` | tworzy gotową stronę w katalogu `site/` |
+| `zensical build --strict` | przerywa budowę przy ostrzeżeniach |
+| `zensical build --clean` | najpierw czyści pamięć podręczną |
+
+W `site/` są zwykłe pliki: `index.html`, `404.html`, `search.json`, `sitemap.xml`, `assets/`. Katalog nie trafia do gita.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Co dopisujemy ręcznie
+
+| Plik | Co dopisujemy | Po co |
+|---|---|---|
+| `pyproject.toml` | opis, `[project.scripts]`, `[tool.*]` | metadane i konfiguracja narzędzi |
+| `.gitignore` | pliki generowane | czyste repo |
+| `README.md` | jak uruchomić i sprawdzić projekt | pierwszy dzień nowej osoby |
+| `zensical.toml`, `docs/` | konfiguracja i treść dokumentacji | strona z dokumentacją |
+| `tests/` | testy | pewność zmian |
+| `.github/workflows/ci.yml` | automatyczne sprawdzanie | kontrola każdej zmiany |
+
+**Zasada:** konfiguracja narzędzi w jednym `pyproject.toml`, więc lokalnie i w CI wystarczą krótkie polecenia.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `pytest`: konfiguracja
+
+```toml
+[tool.pytest]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]
+```
+
+| Opcja | Znaczenie |
+|---|---|
+| `testpaths` | gdzie szukać testów przy samym `uv run pytest` |
+| `addopts` | opcje dodawane do każdego uruchomienia |
+| `-ra` | podsumowanie wszystkich testów, które nie przeszły |
+| `--strict-markers` | literówka w nazwie znacznika to błąd |
+| `pythonpath = ["src"]` | potrzebne tylko, gdy pakiet **nie jest zainstalowany** |
+
+Przy `uv` pakiet jest zainstalowany w `.venv`, więc `pythonpath` tutaj pomijamy.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `.gitignore`
+
+| Wpis | Co pomija | Skąd się bierze |
+|---|---|---|
+| `.venv/` | środowisko | `uv` |
+| `__pycache__/` | skompilowany kod | Python |
+| `.pytest_cache/`, `.ruff_cache/`, `.mypy_cache/` | pamięć podręczna | narzędzia |
+| `dist/`, `*.egg-info/` | zbudowany pakiet | `uv build` i starsze narzędzia |
+| `site/` | zbudowana dokumentacja | `zensical build` |
+| `.idea/` | ustawienia PyCharma | IDE |
+
+**Nie** dodajemy tu `uv.lock`: CI z `--locked` go potrzebuje.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Struktura katalogów
+
+```text
+pyth02_20261102/
+  src/kursy_nbp/        kod pakietu
+    notowania.py
+    narzedzia.py
+    cli.py
+  tests/                testy pakietu
+  docs/                 źródła dokumentacji
+  zajecia/              skrypty z lekcji, poza pakietem
+  .github/workflows/    CI
+  pyproject.toml, uv.lock, zensical.toml, README.md, .gitignore
+```
+
+**Dlaczego `src/`:** testy importują **zainstalowany** pakiet, a nie przypadkiem pliki z bieżącego katalogu.
+Błąd w `pyproject.toml` wychodzi od razu, a nie dopiero u użytkownika.
+</textarea></section>
+<section data-markdown><textarea data-template>
+## CI: po co i jak to działa
+
+- każda zmiana jest sprawdzana **automatycznie** i **na czystej maszynie**
+- „u mnie działa” przestaje wystarczać: `uv.lock` daje te same wersje wszędzie
+- wynik widać przy commicie i w pull requeście
+- plik `.github/workflows/ci.yml` w repo opisuje **kiedy** i **co** uruchomić
+- u nas całość zajmuje około 20 sekund
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ci.yml`: kiedy i na czym
+
+```yaml
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  jakosc:
+    runs-on: ubuntu-latest
+    steps:
+      - ...
+```
+
+| Klucz | Znaczenie |
+|---|---|
+| `name` | nazwa widoczna w zakładce Actions |
+| `on.push.branches` | uruchom po pushu do `main` |
+| `on.pull_request` | uruchom dla każdego pull requesta |
+| `jobs.jakosc` | zadanie o nazwie wybranej przez nas |
+| `runs-on` | system maszyny, tu Linux |
+| `steps` | kroki po kolei; błąd przerywa dalsze |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## `ci.yml`: kroki
+
+| Krok | Co robi | Czego pilnuje |
+|---|---|---|
+| `uses: actions/checkout@v7` | pobiera kod repo | maszyna jest pusta |
+| `uses: astral-sh/setup-uv@v10.3.3` | instaluje `uv` | wymaga pełnego numeru wersji |
+| `run: uv sync --locked` | tworzy `.venv` | lockfile musi być aktualny |
+| `run: uv run ruff format --check` | sprawdza układ kodu | formatowanie |
+| `run: uv run ruff check` | sprawdza reguły | błędy i pułapki |
+| `run: uv run mypy` | sprawdza typy | zgodność typów |
+| `run: uv run pytest` | uruchamia testy | działanie |
+| `run: uv run --group docs zensical build` | buduje dokumentację | czy strona się buduje |
+| `run: uv build` | buduje pakiet | czy pakiet się buduje |
+</textarea></section>
+<section data-markdown><textarea data-template>
+## Czerwony, a potem zielony
+
+```text
+# w tests/test_notowania.py zmieniamy oczekiwany wynik
+git switch -c zepsuty-test
+git commit -am "Celowo zepsuty test"
+git push -u origin zepsuty-test
+gh pr create --fill                 # build na czerwono
+
+git revert --no-edit HEAD
+git push                            # build na zielono
+```
+
+Codziennie, przed wysłaniem zmian:
+
+```text
+uv run ruff format
+uv run ruff check --fix
+uv run mypy
+uv run pytest
+```
+</textarea></section>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/markdown/markdown.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/notes/notes.js"></script>
+<script>
+  Reveal.initialize({ hash: true, slideNumber: 'c/t', plugins: [RevealMarkdown, RevealHighlight, RevealNotes] });
+</script>
+</body>
+</html>

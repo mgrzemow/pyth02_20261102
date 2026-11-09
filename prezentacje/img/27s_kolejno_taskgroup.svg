@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 350" font-family="Segoe UI, system-ui, sans-serif">
+  <!-- dwa awaity po kolei kontra TaskGroup -->
+  <defs><marker id="grot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#306998"/></marker></defs>
+  <text x="10" y="30" font-size="21" fill="#1c2330" text-anchor="start" font-weight="700">await, potem await: razem 2 s</text>
+  <text x="10" y="74" font-size="19" fill="#1c2330" text-anchor="start" font-weight="400" font-family="Consolas, monospace">EUR</text>
+  <rect x="130" y="46" width="340" height="40" rx="5" fill="#dfe4ec" stroke="none" />
+  <text x="300.0" y="73" font-size="17" fill="#68717f" text-anchor="middle" font-weight="400">czeka</text>
+  <text x="10" y="122" font-size="19" fill="#1c2330" text-anchor="start" font-weight="400" font-family="Consolas, monospace">USD</text>
+  <rect x="470" y="94" width="340" height="40" rx="5" fill="#dfe4ec" stroke="none" />
+  <text x="640.0" y="121" font-size="17" fill="#68717f" text-anchor="middle" font-weight="400">czeka</text>
+  <text x="10" y="185" font-size="21" fill="#1a7f37" text-anchor="start" font-weight="700">TaskGroup: razem 1 s</text>
+  <text x="10" y="229" font-size="19" fill="#1c2330" text-anchor="start" font-weight="400" font-family="Consolas, monospace">EUR</text>
+  <rect x="130" y="201" width="340" height="40" rx="5" fill="#dfe4ec" stroke="none" />
+  <text x="300.0" y="228" font-size="17" fill="#68717f" text-anchor="middle" font-weight="400">czeka</text>
+  <text x="10" y="277" font-size="19" fill="#1c2330" text-anchor="start" font-weight="400" font-family="Consolas, monospace">USD</text>
+  <rect x="130" y="249" width="340" height="40" rx="5" fill="#dfe4ec" stroke="none" />
+  <text x="300.0" y="276" font-size="17" fill="#68717f" text-anchor="middle" font-weight="400">czeka</text>
+  <line x1="130" y1="310" x2="810" y2="310" stroke="#68717f" stroke-width="2" />
+  <line x1="130" y1="305" x2="130" y2="315" stroke="#68717f" stroke-width="2" />
+  <text x="130" y="336" font-size="18" fill="#68717f" text-anchor="middle" font-weight="400">0 s</text>
+  <line x1="470" y1="305" x2="470" y2="315" stroke="#68717f" stroke-width="2" />
+  <text x="470" y="336" font-size="18" fill="#68717f" text-anchor="middle" font-weight="400">1 s</text>
+  <line x1="810" y1="305" x2="810" y2="315" stroke="#68717f" stroke-width="2" />
+  <text x="810" y="336" font-size="18" fill="#68717f" text-anchor="middle" font-weight="400">2 s</text>
+</svg>

@@ -2,6 +2,8 @@
 
 Pobieranie i strumieniowe przetwarzanie notowań walut z API NBP.
 
+Autor: Michał Grzemowski · [LinkedIn](https://www.linkedin.com/in/michal-grzemowski-trainer/)
+
 ```text
 uv run kursy-nbp usd --limit 3 --min-spread 0.05
 ```

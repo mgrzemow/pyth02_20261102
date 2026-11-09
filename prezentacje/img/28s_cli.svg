@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" font-family="Segoe UI, system-ui, sans-serif">
+  <!-- droga od polecenia w terminalu do wyniku -->
+  <defs><marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#306998"/></marker></defs>
+  <rect x="20" y="20" width="270" height="110" rx="8" fill="#fff8d6" stroke="#c9a400" stroke-width="2.5"/>
+  <text x="155.0" y="50" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">uv run kursy-nbp</text>
+  <text x="155.0" y="78" font-size="17" fill="#68717f" text-anchor="middle">synchronizuje .venv</text>
+  <text x="155.0" y="103" font-size="17" fill="#68717f" text-anchor="middle">i uruchamia polecenie</text>
+  <rect x="315" y="20" width="270" height="110" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="450.0" y="50" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">kursy-nbp.exe</text>
+  <text x="450.0" y="78" font-size="17" fill="#68717f" text-anchor="middle">w .venv/Scripts,</text>
+  <text x="450.0" y="103" font-size="17" fill="#68717f" text-anchor="middle">utworzony przy instalacji</text>
+  <rect x="610" y="20" width="270" height="110" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="745.0" y="50" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">kursy_nbp.cli:app</text>
+  <text x="745.0" y="78" font-size="17" fill="#68717f" text-anchor="middle">z [project.scripts]:</text>
+  <text x="745.0" y="103" font-size="17" fill="#68717f" text-anchor="middle">moduł i obiekt do wywołania</text>
+  <path d="M292 75 L312 75" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M587 75 L607 75" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <rect x="610" y="175" width="270" height="110" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="745.0" y="205" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">Typer</text>
+  <text x="745.0" y="233" font-size="17" fill="#68717f" text-anchor="middle">czyta argumenty, sprawdza</text>
+  <text x="745.0" y="258" font-size="17" fill="#68717f" text-anchor="middle">typy, tworzy --help</text>
+  <rect x="315" y="175" width="270" height="110" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="450.0" y="205" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">pokaz(...)</text>
+  <text x="450.0" y="233" font-size="17" fill="#68717f" text-anchor="middle">waluta="usd",</text>
+  <text x="450.0" y="258" font-size="17" fill="#68717f" text-anchor="middle">limit=2, min_spread=0.0</text>
+  <rect x="20" y="175" width="270" height="110" rx="8" fill="#e7f0f7" stroke="#306998" stroke-width="2.5"/>
+  <text x="155.0" y="205" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle" font-family="Consolas, monospace">generatory</text>
+  <text x="155.0" y="233" font-size="17" fill="#68717f" text-anchor="middle">pobierz, spread, filtruj,</text>
+  <text x="155.0" y="258" font-size="17" fill="#68717f" text-anchor="middle">islice zatrzymuje po limicie</text>
+  <path d="M745 133 L745 172" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M607 230 L588 230" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <path d="M312 230 L293 230" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+  <rect x="20" y="320" width="860" height="60" rx="8" fill="#fff8d6" stroke="#c9a400" stroke-width="2.5"/>
+  <text x="450.0" y="350" font-size="20" font-weight="700" fill="#1c2330" text-anchor="middle">typer.echo: linia z notowaniem na ekranie</text>
+  <path d="M155 288 L155 317" fill="none" stroke="#306998" stroke-width="3.5" marker-end="url(#g)"/>
+</svg>
